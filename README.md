@@ -1,1 +1,113 @@
-# event_analytics_platform
+# Event Analytics Platform
+
+![Python 3.13](https://img.shields.io/badge/python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.128.0-005571?style=flat-square&logo=fastapi)
+![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+**A high-performance, self-hosted event analytics platform.**
+Designed to handle real-time ingestion, processing, and visualization of user behavior data. Built to evolve from a simple API to a distributed event-driven system.
+
+> The goal is to build a scalable pipeline comparable to Mixpanel/Amplitude but open-source.
+
+---
+
+## Architecture
+
+![container](./docs/architecture/stage1/container.drawio.png)
+
+_Detailed architecture breakdown:_
+
+- [Stage 1](./docs/architecture/stage1/)
+
+---
+
+## Tech Stack
+
+### **Core**
+
+![Python 3.13](https://img.shields.io/badge/python_3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Pydantic V2](https://img.shields.io/badge/Pydantic_v2-e92063?style=for-the-badge&logo=pydantic&logoColor=white)
+
+### **Streaming & Storage:**
+
+![Redpanda](https://img.shields.io/badge/Redpanda-C92230?style=for-the-badge&logo=redpanda&logoColor=white)
+![ClickHouse](https://img.shields.io/badge/ClickHouse-F5CA12?style=for-the-badge&logo=clickhouse&logoColor=black)
+![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+
+### **Infrastructure:**
+
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+
+---
+
+## Roadmap & Progress
+
+I am building this platform in 5 evolution stages to simulate a real-world high-load engineering journey.
+
+    [ ] Stage 1: Ingestion Core (Current Focus 🚧)
+        [x] Basic project setup & Health API
+        [ ] High-performance HTTP API (FastAPI)
+        [ ] Async ingestion queue (Redis)
+        [ ] Docker containerization
+    [ ] Stage 2: Analytics Layer (ClickHouse, Aggregations)
+    [ ] Stage 3: Event-Driven Architecture (Kafka, Idempotency, Avro)
+    [ ] Stage 4: Production Ready (Kubernetes, Prometheus, Grafana)
+    [ ] Stage 5: Data Platform (dbt, Data Quality, Catalog)
+
+---
+
+## Getting Started (Local Dev)
+
+Currently, the project is in the initial development phase.
+
+### Prerequisites
+
+- Python 3.13+
+- Docker & Docker Compose
+- [uv](https://github.com/astral-sh/uv)
+
+### Installation
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/jinjik19/event_analytics_platform.git
+cd event_analytics_platform/
+```
+
+2. Setup Virtual Environment
+
+```bash
+uv venv
+source .venv/bin/activate
+```
+
+3. Install dependencies
+
+```bash
+uv sync
+```
+
+4. Run the API Server
+
+```bash
+# Run with auto-reload
+uv run uvicorn app.main:app --reload
+```
+
+5. Check Health
+
+```bash
+curl http://localhost:8000/healthz
+# Output: {"status": "ok"}
+```
+
+---
+
+📝 License
+
+This project is licensed under the MIT License.
