@@ -5,12 +5,70 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "asyncpg>=0.31.0",
     "fastapi[standard]>=0.128.0",
+    "granian>=2.6.0",
+    "valkey>=6.1.1",
 ]
 
 [dependency-groups]
 dev = [
-    "bandit>=1.9.2",
     "mypy>=1.19.1",
     "ruff>=0.14.10",
+]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+mypy_path = "src"
+ignore_missing_imports = false
+disallow_untyped_defs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["asyncpg.*", "granian.*"]
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+exclude = []
+
+[tool.ruff.lint]
+select = [
+    "F",    # Pyflakes
+    "E",    # Pydocstyle error
+    "W",    # Pydocstyle warnings
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "ANN",  # flake8-annotations
+    "S",    # flake8-bandit
+    "B",    # flake8-bugbear
+    "C901", # mccabe complexity
+    "SIM",  # flake8-simplify
+    "T20",  # flake8-print
+    "RUF",  # ruff specific rules
+]
+ignore = [
+    "ANN101", # self without type
+    "ANN102", # cls without type
+    "D203",   # 1 blank line required before class docstring.
+    "D213",   # Multi-line docstring summary should start at the second line.
+]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"src/tests/*" = [
+    "S101", # access for assert in tests
+    "ANN",  # Type annotations.
+    "S105", # hardcode passwords in tests
+]
+"__init__.py" = [
+    "F401"  # Unused imports.
 ]
