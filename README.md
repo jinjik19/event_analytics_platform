@@ -48,27 +48,24 @@ _Detailed architecture breakdown:_
 
 I am building this platform in 5 evolution stages to simulate a real-world high-load engineering journey.
 
-    [ ] Stage 1: Ingestion Core (Current Focus 🚧)
-        [x] Basic project setup & Health API
-        [ ] High-performance HTTP API (FastAPI)
-        [ ] Async ingestion queue (Redis)
-        [ ] Docker containerization
-    [ ] Stage 2: Analytics Layer (ClickHouse, Aggregations)
-    [ ] Stage 3: Event-Driven Architecture (Kafka, Idempotency, Avro)
-    [ ] Stage 4: Production Ready (Kubernetes, Prometheus, Grafana)
-    [ ] Stage 5: Data Platform (dbt, Data Quality, Catalog)
+- [ ] **Stage 1: Ingestion Core** (Current Focus 🚧)
+  - [x] Basic project setup & Health API
+  - [ ] High-performance HTTP API (FastAPI)
+  - [ ] Async ingestion queue (Redis)
+  - [ ] Docker containerization
+- [ ] **Stage 2: Analytics Layer** (ClickHouse, Aggregations)
+- [ ] **Stage 3: Event-Driven Architecture** (Kafka, Idempotency, Avro)
+- [ ] **Stage 4: Production Ready** (Kubernetes, Prometheus, Grafana)
+- [ ] **Stage 5: Data Platform** (dbt, Data Quality, Catalog)
 
 ---
 
-## Getting Started (Local Dev)
-
-Currently, the project is in the initial development phase.
+## Getting Started
 
 ### Prerequisites
 
 - Python 3.13+
 - Docker & Docker Compose
-- [uv](https://github.com/astral-sh/uv)
 
 ### Installation
 
@@ -79,27 +76,16 @@ git clone https://github.com/jinjik19/event_analytics_platform.git
 cd event_analytics_platform/
 ```
 
-2. Setup Virtual Environment
+2. Run the API Server
 
 ```bash
-uv venv
-source .venv/bin/activate
+# Start all services
+make start
+# OR
+docker-compose up -d --build
 ```
 
-3. Install dependencies
-
-```bash
-uv sync
-```
-
-4. Run the API Server
-
-```bash
-# Run with auto-reload
-uv run uvicorn app.main:app --reload
-```
-
-5. Check Health
+3. Check Health
 
 ```bash
 curl http://localhost:8000/healthz
