@@ -4,15 +4,15 @@ categories:
   - title: 'Features'
     labels:
       - 'feature'
-      - 'feat'
+      - 'enhancement'
   - title: 'Bug Fixes'
     labels:
       - 'fix'
       - 'bug'
   - title: 'Maintenance'
     labels:
-      - 'chore'
-      - 'docs'
+      - 'actions'
+      - 'documentation'
 version-resolver:
   major:
     labels:
