@@ -1,6 +1,6 @@
 from fastapi import APIRouter, FastAPI
 
-from app.api.routers import healthz
+from entrypoint.api.routers import healthz
 
 
 app = FastAPI(

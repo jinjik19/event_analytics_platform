@@ -41,4 +41,4 @@ USER appuser
 
 EXPOSE 8000
 
-CMD ["granian", "--interface", "asgi", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "app.main:app"]
+CMD ["granian", "--interface", "asgi", "--host", "0.0.0.0", "--port", "8000", "--workers", "2", "entrypoint.api.main:app"]
