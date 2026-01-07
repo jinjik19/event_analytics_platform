@@ -1,35 +1,62 @@
 import secrets
-from datetime import datetime
+from datetime import UTC, datetime
 
-from uuid6 import uuid7
+from uuid6 import UUID, uuid7
 
+from domain.project.exceptions import InvalidProjectNameError, InvalidProjectPlanError
 from domain.project.types import Plan
 
 
 class Project:
-    def __init__(self, name: str, plan: Plan, env: str) -> None:
-        self._project_id = uuid7()
+    __slots__ = ("_api_key", "_created_at", "_name", "_plan", "_project_id")
+
+    def __init__(
+        self,
+        project_id: UUID,
+        name: str,
+        plan: Plan,
+        api_key: str,
+        created_at: datetime,
+    ) -> None:
+        self._project_id = project_id
+        self._api_key = api_key
+        self._created_at = created_at
+
         self.name = name
         self.plan = plan
-        self._api_key = self._generate_api_key(env)
-        self.created_at = datetime.now()
+
+    # --- FACTORY ---
+
+    @classmethod
+    def create(cls, name: str, plan: Plan, env: str = "prod") -> "Project":
+        now = datetime.now(UTC)
+        new_id = uuid7()
+        random_part = secrets.token_urlsafe(32)
+        new_api_key = f"ak_{env}_{random_part}"
+
+        return cls(project_id=new_id, name=name, plan=plan, api_key=new_api_key, created_at=now)
 
     # --- GETTERS ---
+
     @property
-    def project_id(self) -> str:
+    def project_id(self) -> UUID:
         return self._project_id
 
     @property
     def name(self) -> str:
-        return self.name
+        return self._name
 
     @property
     def plan(self) -> Plan:
-        return self.plan
+        return self._plan
 
     @property
     def api_key(self) -> str:
         return self._api_key
+
+    @property
+    def created_at(self) -> datetime:
+        return self._created_at
 
     # --- SETTERS ---
 
@@ -38,31 +65,24 @@ class Project:
         cleaned_name = value.strip()
         if len(cleaned_name) < 3:
             # TODO: Replace with proper exception
-            raise ValueError("Project name must be at least 3 chars long.")
-        if len(value) > 100:
+            raise InvalidProjectNameError("Project name must be at least 3 chars long.")
+        if len(cleaned_name) > 100:
             # TODO: Replace with proper exception
-            raise ValueError("Project name must be shorter than 100 chars.")
+            raise InvalidProjectNameError("Project name must be shorter than 100 chars.")
 
-        self.name = value
+        self._name = value
 
     @plan.setter
-    def plan(self, value: Plan) -> None:
-        if not isinstance(value, Plan):
-            raise ValueError("Invalid plan type.")
-
-        self.plan = value
-
-    # --- LOGIC ---
-
-    def _generate_api_key(self, env: str) -> str:
-        """Genereate api key for project use env.
-
-        Attrs:
-            env: Current environment
-
-        """
-        random_part = secrets.token_urlsafe(32)
-        return f"ak_{env}_{random_part}"
+    def plan(self, value: Plan | str) -> None:
+        if isinstance(value, Plan):
+            self._plan = value
+        elif isinstance(value, str):
+            try:
+                self._plan = Plan(value)
+            except ValueError as exc:
+                raise InvalidProjectPlanError(f"Plan '{value}' is not valid.") from exc
+        else:
+            raise InvalidProjectPlanError("Invalid type for plan.")
 
     # --- MAGIC METHODS ---
 

@@ -3,7 +3,7 @@ from typing import Protocol
 from domain.project.models import Project
 
 
-class ProjectRepository(Protocol):
+class IProjectRepository(Protocol):
     def add(self, project: Project) -> None: ...
 
     def get_by_api_key(self, api_key: str) -> Project | None: ...
