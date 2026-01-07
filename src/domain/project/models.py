@@ -32,7 +32,7 @@ class Project:
         now = datetime.now(UTC)
         new_id = uuid7()
         random_part = secrets.token_urlsafe(32)
-        new_api_key = f"ak_{env}_{random_part}"
+        new_api_key = f"wk_{env}_{random_part}"
 
         return cls(project_id=new_id, name=name, plan=plan, api_key=new_api_key, created_at=now)
 
@@ -43,14 +43,6 @@ class Project:
         return self._project_id
 
     @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def plan(self) -> Plan:
-        return self._plan
-
-    @property
     def api_key(self) -> str:
         return self._api_key
 
@@ -58,7 +50,11 @@ class Project:
     def created_at(self) -> datetime:
         return self._created_at
 
-    # --- SETTERS ---
+    # --- NAME ---
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     @name.setter
     def name(self, value: str) -> None:
@@ -71,6 +67,12 @@ class Project:
             raise InvalidProjectNameError("Project name must be shorter than 100 chars.")
 
         self._name = value
+
+    # PLAN
+
+    @property
+    def plan(self) -> Plan:
+        return self._plan
 
     @plan.setter
     def plan(self, value: Plan | str) -> None:
