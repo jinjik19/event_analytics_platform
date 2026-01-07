@@ -8,6 +8,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "fastapi[standard]>=0.128.0",
     "granian>=2.6.0",
+    "structlog>=25.5.0",
     "valkey>=6.1.1",
 ]
 
