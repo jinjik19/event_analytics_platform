@@ -3,13 +3,13 @@ from collections.abc import AsyncGenerator
 import asyncpg
 from dishka import Provider, Scope, provide
 
-from infrastructure.config.settings import settings
+from infrastructure.config.settings import Settings
 from infrastructure.database.postgres.uow import PostgresUnitOfWork
 
 
 class DbProvider(Provider):
     @provide(scope=Scope.APP)
-    async def get_db_pool(self) -> AsyncGenerator[asyncpg.Pool]:
+    async def get_db_pool(self, settings: Settings) -> AsyncGenerator[asyncpg.Pool]:
         pool = await asyncpg.create_pool(dsn=settings.db_dsn, min_size=1, max_size=10)
         yield pool
         await pool.close()
