@@ -3,8 +3,7 @@ from collections.abc import AsyncGenerator
 import asyncpg
 from dishka import Provider, Scope, provide
 
-from application.common.uow import IUnitOfWork
-from infrastructure.config import settings
+from infrastructure.config.settings import settings
 from infrastructure.database.postgres.uow import PostgresUnitOfWork
 
 
@@ -21,6 +20,6 @@ class DbProvider(Provider):
             yield conn
 
     @provide(scope=Scope.REQUEST)
-    async def get_uow(self, connection: asyncpg.Connection) -> AsyncGenerator[IUnitOfWork]:
+    async def get_uow(self, connection: asyncpg.Connection) -> AsyncGenerator[PostgresUnitOfWork]:
         async with PostgresUnitOfWork(connection) as uow:
             yield uow

@@ -1,3 +1,6 @@
+from datetime import datetime
+from typing import cast
+
 from uuid6 import UUID
 
 from domain.project.exceptions import ProjectNotFoundError
@@ -20,7 +23,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
             project.created_at,
         )
 
-    async def get_by_api_key(self, api_key: str) -> Project | None:
+    async def get_by_api_key(self, api_key: str) -> Project:
         query = """
             SELECT project_id, name, plan, api_key, created_at
             FROM project
@@ -33,7 +36,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
 
         return self._map_row_to_entity(row)
 
-    async def get_by_id(self, project_id: str) -> Project | None:
+    async def get_by_id(self, project_id: str) -> Project:
         query = """
             SELECT project_id, name, plan, api_key, created_at
             FROM project
@@ -56,5 +59,5 @@ class PostgresProjectRepository(PostgresBaseRepository):
             name=row["name"],
             plan=Plan(row["plan"]),
             api_key=row["api_key"],
-            created_at=row["created_at"],
+            created_at=cast(datetime, row["created_at"]),
         )

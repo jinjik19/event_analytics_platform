@@ -1,14 +1,15 @@
 from types import TracebackType
 
 import asyncpg
+from asyncpg.transaction import Transaction
 
 from infrastructure.database.postgres.repositories.project import PostgresProjectRepository
 
 
 class PostgresUnitOfWork:
     def __init__(self, connection: asyncpg.Connection) -> None:
-        self._connection = connection
-        self._transaction = None
+        self._connection: asyncpg.Connection = connection
+        self._transaction: Transaction = None
 
         self.project = PostgresProjectRepository(connection)
 
