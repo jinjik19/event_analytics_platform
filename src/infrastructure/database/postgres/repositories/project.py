@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from uuid6 import UUID
 
 from domain.project.exceptions import ProjectNotFoundError
@@ -12,18 +10,19 @@ class PostgresProjectRepository(PostgresBaseRepository):
     async def add(self, project: Project) -> None:
         await self.execute(
             """
-                INSERT INTO project(project_id, name, api_key, created_at)
-                VALUES($1, $2, $3, $4)
+                INSERT INTO project(project_id, name, plan, api_key, created_at)
+                VALUES($1, $2, $3, $4, $5)
             """,
             project.project_id,
             project.name,
+            project.plan.value,
             project.api_key,
             project.created_at,
         )
 
     async def get_by_api_key(self, api_key: str) -> Project | None:
         query = """
-            SELECT project_id, name, api_key, created_at
+            SELECT project_id, name, plan, api_key, created_at
             FROM project
             WHERE api_key = $1
         """
@@ -36,7 +35,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
 
     async def get_by_id(self, project_id: str) -> Project | None:
         query = """
-            SELECT project_id, name, api_key, created_at
+            SELECT project_id, name, plan, api_key, created_at
             FROM project
             WHERE project_id = $1
         """
@@ -53,9 +52,9 @@ class PostgresProjectRepository(PostgresBaseRepository):
         Превращает 'грязную' строку БД в чистую Сущность.
         """
         return Project(
-            project_id=UUID(row["id"]),
+            project_id=UUID(row["project_id"]),
             name=row["name"],
             plan=Plan(row["plan"]),
             api_key=row["api_key"],
-            created_at=datetime.fromisoformat(row["created_at"]),
+            created_at=row["created_at"],
         )
