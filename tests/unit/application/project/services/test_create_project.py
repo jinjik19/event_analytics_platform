@@ -1,6 +1,5 @@
 from unittest.mock import AsyncMock, MagicMock
 
-import pytest
 from structlog import BoundLogger
 
 from application.project.schemas.create_dto import CreateProjectDTO
@@ -9,7 +8,6 @@ from domain.project.types import Plan
 from infrastructure.config.settings import Settings
 
 
-@pytest.mark.asyncio
 async def test_create_project_service():
     uow_mock = AsyncMock()
     uow_mock.project = AsyncMock()
