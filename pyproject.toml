@@ -9,13 +9,20 @@ dependencies = [
     "dishka>=1.7.2",
     "fastapi[standard]>=0.128.0",
     "granian>=2.6.0",
+    "httpx>=0.28.1",
     "structlog>=25.5.0",
     "uuid6>=2025.0.1",
     "valkey>=6.1.1",
 ]
 
 [dependency-groups]
-dev = ["mypy>=1.19.1", "pre-commit>=4.5.1", "ruff>=0.14.10"]
+dev = [
+    "mypy>=1.19.1",
+    "pre-commit>=4.5.1",
+    "pytest-cov>=7.0.0",
+    "ruff>=0.14.10",
+    "testcontainers[postgres]>=4.14.0",
+]
 
 [tool.mypy]
 python_version = "3.13"
@@ -70,5 +77,7 @@ convention = "google"
 ]
 
 [tool.pytest.ini_options]
+addopts = "--import-mode=importlib"
 pythonpath = "src"
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "session"
