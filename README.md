@@ -42,6 +42,10 @@ _Detailed architecture breakdown:_
 ![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
 ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
 
+### **Migrations**
+
+![Atlas](https://img.shields.io/badge/Atlas-2080F0?style=for-the-badge&logo=go&logoColor=white)
+
 ---
 
 ## Roadmap & Progress
@@ -52,7 +56,7 @@ I am building this platform in 5 evolution stages to simulate a real-world high-
   - [x] Basic project setup & Health API
   - [ ] High-performance HTTP API (FastAPI)
   - [ ] Async ingestion queue (Redis)
-  - [ ] Docker containerization
+  - [x] Docker containerization
 - [ ] **Stage 2: Analytics Layer** (ClickHouse, Aggregations)
 - [ ] **Stage 3: Event-Driven Architecture** (Kafka, Idempotency, Avro)
 - [ ] **Stage 4: Production Ready** (Kubernetes, Prometheus, Grafana)

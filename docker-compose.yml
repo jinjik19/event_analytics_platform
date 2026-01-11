@@ -17,6 +17,18 @@ services:
       timeout: 5s
       retries: 5
 
+  migrator_db:
+    image: arigaio/atlas:1.0.0
+    env_file:
+      - .env
+    volumes:
+      - ./atlas.hcl:/atlas.hcl
+      - ./db/migrations/postgres:/migrations
+    command: migrate apply --url "postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable"
+    depends_on:
+      db:
+        condition: service_healthy
+
   queue:
     container_name: event_analytics_queue
     image: valkey/valkey:8-bookworm
@@ -37,8 +49,8 @@ services:
     build: .
     restart: always
     depends_on:
-      db:
-        condition: service_healthy
+      migrator_db:
+        condition: service_completed_successfully
       queue:
         condition: service_healthy
     env_file:

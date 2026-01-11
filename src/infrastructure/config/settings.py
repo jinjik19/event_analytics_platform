@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     @computed_field
     def db_dsn(self) -> str:
         return (
-            f"postgresql+asyncpg://{self.db_user}:{self.db_password}"
+            f"postgresql://{self.db_user}:{self.db_password}"
             f"@{self.db_host}:{self.db_port}/{self.db_name}"
         )
 

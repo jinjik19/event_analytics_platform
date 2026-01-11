@@ -1,5 +1,5 @@
-.PHONY: help start stop restart logs lint format analyze
-
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov
+APP_ENV_TEST=test
 
 # Default target
 help:
@@ -40,7 +40,21 @@ analyze:
 	@echo "Running Ruff (Linter & Security)..."
 	@uv run ruff check src/
 	@echo "Ruff passed"
-	
+
 	@echo "Running MyPy (Types)..."
 	@uv run mypy src/
 	@echo "MyPy passed"
+
+# Tests
+
+test:
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests -v
+
+test-unit:
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/unit -v
+
+test-e2e:
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/e2e -v
+
+test-cov:
+	APP_ENV=$(APP_ENV_TEST) uv run pytest --cov=src tests

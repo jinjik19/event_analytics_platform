@@ -10,11 +10,13 @@ jobs:
   quality:
     name: Code Quality
     runs-on: ubuntu-latest
+    env:
+      UV_NO_INTERACTIVE: 1
     steps:
       - uses: actions/checkout@v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v1
+        uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -23,6 +25,11 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --all-extras --frozen
+
+      - name: Setup Atlas
+        uses: ariga/setup-atlas@v0
+        with:
+          version: v1.0.0
 
       - name: Lint with Ruff
         run: uv run ruff check src/
@@ -33,6 +40,18 @@ jobs:
       - name: Type check with MyPy
         run: uv run mypy src/
 
-      # Тестов пока нет, но заготовка нужна
-      # - name: Run tests
-      #   run: uv run pytest
+      - name: Run tests & Check covearge
+        run: |
+          uv run pytest \
+          --cov=src \
+          --cov-report=term-missing \
+          --cov-report=xml \
+          tests
+        env:
+          APP_ENV: test
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
