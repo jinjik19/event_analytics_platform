@@ -42,7 +42,7 @@ jobs:
           --cov-report=term-missing \
           --cov-report=xml \
           tests
-        with:
+        env:
           APP_ENV: test
 
       - name: Upload coverage to Codecov
