@@ -18,7 +18,7 @@ The standard Python `logging` module is primarily designed for text processing. 
 
 I will use **structlog** as the primary logging library for the platform.
 
-It will be configured to wrap the standard library's logger, ensuring compatibility with third-party libraries, while providing a modern API for our application code.
+It will be configured to wrap the standard library's logger, ensuring compatibility with third-party libraries, while providing a modern API for my application code.
 
 ## Consequences
 

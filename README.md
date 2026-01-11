@@ -31,16 +31,12 @@ _Detailed architecture breakdown:_
 
 ### **Streaming & Storage:**
 
-![Redpanda](https://img.shields.io/badge/Redpanda-C92230?style=for-the-badge&logo=redpanda&logoColor=white)
-![ClickHouse](https://img.shields.io/badge/ClickHouse-F5CA12?style=for-the-badge&logo=clickhouse&logoColor=black)
 ![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
 
 ### **Infrastructure:**
 
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
-![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
 
 ### **Migrations**
 
@@ -52,7 +48,7 @@ _Detailed architecture breakdown:_
 
 I am building this platform in 5 evolution stages to simulate a real-world high-load engineering journey.
 
-- [ ] **Stage 1: Ingestion Core** (Current Focus 🚧)
+- [ ] **Stage 1: Ingestion Core** (Current Focus)
   - [x] Basic project setup & Health API
   - [ ] High-performance HTTP API (FastAPI)
   - [ ] Async ingestion queue (Redis)
@@ -96,7 +92,43 @@ curl http://localhost:8000/healthz
 # Output: {"status": "ok"}
 ```
 
+4. Create/Run migration (optional, because migrations apply with docker containers up)
+
+Create migration.
+
+1. Create sql file with your command in db/schema/postgres
+2. Run command
+
+```bash
+atlas migrate diff some_name --env postgres
+```
+
+Run migration
+
+```bash
+atlas migrate apply --env postgres
+```
+
 ---
+
+# Endpoints:
+
+1. Create project
+
+```
+POST /api/v1/project
+BODY: {
+    name: str
+    plan: free | pro | enterprise
+}
+RESPONSE: {
+    project_id: uuid
+    name: str
+    plan: free | pro | enterprise
+    api_key: str
+    created_at: str
+}
+```
 
 📝 License
 
