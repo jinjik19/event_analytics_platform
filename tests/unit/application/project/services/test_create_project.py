@@ -1,31 +1,20 @@
-from unittest.mock import AsyncMock, MagicMock
-
-from structlog import BoundLogger
+from unittest.mock import AsyncMock
 
 from application.project.schemas.create_dto import CreateProjectDTO
 from application.project.services.create import CreateProjectService
 from domain.project.types import Plan
-from infrastructure.config.settings import Settings
 
 
-async def test_create_project_service():
-    uow_mock = AsyncMock()
-    uow_mock.project = AsyncMock()
+async def test_create_project_service(mock_uow, mock_logger, mock_settings):
+    mock_uow.project = AsyncMock()
 
-    settings_mock = MagicMock(spec=Settings)
-    settings_mock.app_env = "test"
-
-    logger_mock = MagicMock(spec=BoundLogger)
-    logger_mock.bind.return_value = logger_mock
-    logger_mock.info = MagicMock()
-
-    service = CreateProjectService(uow=uow_mock, logger=logger_mock, settings=settings_mock)
+    service = CreateProjectService(uow=mock_uow, logger=mock_logger, settings=mock_settings)
     dto = CreateProjectDTO(name="Test Project", plan=Plan.FREE)
 
     result = await service(dto)
 
     assert result.name == "Test Project"
-    uow_mock.project.add.assert_called_once()
-    uow_mock.commit.assert_called_once()
+    mock_uow.project.add.assert_called_once()
+    mock_uow.commit.assert_called_once()
 
-    assert logger_mock.info.called
+    assert mock_logger.info.called

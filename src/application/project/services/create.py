@@ -1,4 +1,4 @@
-import logging
+from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
 from application.project.schemas.create_dto import CreateProjectDTO
@@ -8,7 +8,7 @@ from infrastructure.config.settings import Settings
 
 
 class CreateProjectService:
-    def __init__(self, uow: IUnitOfWork, logger: logging.Logger, settings: Settings) -> None:
+    def __init__(self, uow: IUnitOfWork, logger: BoundLogger, settings: Settings) -> None:
         self._uow = uow
         self._logger = logger
         self._settings = settings
