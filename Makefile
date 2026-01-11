@@ -1,5 +1,4 @@
 .PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov
-PYTHONPATH = src
 APP_ENV_TEST=test
 
 # Default target
@@ -49,13 +48,13 @@ analyze:
 # Tests
 
 test:
-	APP_ENV=$(APP_ENV_TEST) PYTHONPATH=$(PYTHONPATH) uv run pytest tests -v
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests -v
 
 test-unit:
-	APP_ENV=$(APP_ENV_TEST) PYTHONPATH=$(PYTHONPATH) uv run pytest tests/unit -v
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/unit -v
 
 test-e2e:
-	APP_ENV=$(APP_ENV_TEST) PYTHONPATH=$(PYTHONPATH) uv run pytest tests/e2e -v
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/e2e -v
 
 test-cov:
-	APP_ENV=$(APP_ENV_TEST) PYTHONPATH=$(PYTHONPATH) uv run pytest --cov=src tests
+	APP_ENV=$(APP_ENV_TEST) uv run pytest --cov=src tests
