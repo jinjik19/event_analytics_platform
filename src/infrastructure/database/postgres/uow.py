@@ -3,7 +3,9 @@ from types import TracebackType
 import asyncpg
 from asyncpg.transaction import Transaction
 
+from domain.event.repository import IEventRepository
 from domain.project.repository import IProjectRepository
+from infrastructure.database.postgres.repositories.event import PostgresEventRepository
 from infrastructure.database.postgres.repositories.project import PostgresProjectRepository
 
 
@@ -13,6 +15,7 @@ class PostgresUnitOfWork:
         self._transaction: Transaction = None
 
         self.project: IProjectRepository = PostgresProjectRepository(connection)
+        self.event: IEventRepository = PostgresEventRepository(connection)
 
     async def __aenter__(self) -> "PostgresUnitOfWork":
         self._transaction = self._connection.transaction()

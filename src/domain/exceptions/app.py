@@ -5,9 +5,17 @@ class NotFoundError(BaseError):
     pass
 
 
-class InvalidError(BaseError):
+class InvalidPayloadError(BaseError):
     pass
 
 
 class UnauthorizedError(BaseError):
+    pass
+
+
+class UnexpectedError(BaseError):
+    pass
+
+
+class ValidationError(BaseError):
     pass

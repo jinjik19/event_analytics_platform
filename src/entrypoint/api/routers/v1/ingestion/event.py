@@ -1,10 +1,11 @@
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
 
+from application.common.error_response import RESPONSE
 from application.events.schemas.ingest_dto import IngestEventDTO
 from application.events.schemas.response_dto import IngestEventResponseDTO
 from application.events.services.ingest import IngestEventService
-from entrypoint.api.dependencies.current_project_id import CurrentProjectID
+from domain.types import ProjectID
 
 
 router = APIRouter(prefix="/event", tags=["Event"], route_class=DishkaRoute)
@@ -14,9 +15,15 @@ router = APIRouter(prefix="/event", tags=["Event"], route_class=DishkaRoute)
     "",
     summary="Ingest event",
     status_code=status.HTTP_202_ACCEPTED,
+    responses={
+        status.HTTP_200_OK: {"model": IngestEventResponseDTO},
+        status.HTTP_400_BAD_REQUEST: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_422_UNPROCESSABLE_CONTENT: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE[status.HTTP_400_BAD_REQUEST],
+    },
 )
 async def ingest_event(
-    project_id: CurrentProjectID,
+    project_id: FromDishka[ProjectID],
     data: IngestEventDTO,
     service: FromDishka[IngestEventService],
 ) -> IngestEventResponseDTO:

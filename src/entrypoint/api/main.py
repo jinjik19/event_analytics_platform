@@ -1,27 +1,56 @@
 from dishka import make_async_container
-from dishka.integrations.fastapi import setup_dishka
-from fastapi import APIRouter, FastAPI
+from dishka.integrations.fastapi import FastapiProvider, setup_dishka
+from fastapi import APIRouter, FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.middleware.cors import CORSMiddleware
 
 from entrypoint.api.lifespan import lifespan
+from entrypoint.api.middleware.exception_handler import ExceptionHandlerMiddleware
 from entrypoint.api.middleware.logger import StructlogMiddleware
 from entrypoint.api.routers import healthz
-from entrypoint.api.routers.v1.ingestion import project
+from entrypoint.api.routers.v1.ingestion import event, project
+from infrastructure.config.settings import AppEnv, settings
 from infrastructure.database.postgres.providers import DbProvider
+from infrastructure.di.providers.api_key import ApiKeyProvider
 from infrastructure.di.providers.application import ApplicationProvider
+from infrastructure.di.providers.cache import CacheProvider
 from infrastructure.di.providers.logger import LoggerProvider
 from infrastructure.di.providers.settings import SettingsProvider
+
+
+async def re_raise_exception(request: Request, exc: Exception) -> Response:
+    raise exc
 
 
 def create_app() -> FastAPI:
     app = FastAPI(
         title="Event Analytics Platform",
         lifespan=lifespan,
+        exception_handlers={},
     )
 
-    app.add_middleware(StructlogMiddleware)
+    app.add_middleware(ExceptionHandlerMiddleware)
+
+    if settings.app_env != AppEnv.TEST:
+        app.add_middleware(StructlogMiddleware)
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=False,
+            allow_methods=["*"],
+            allow_headers=[
+                "Authorization",
+                "X-Api-Key",
+            ],
+        )
+
+    app.add_exception_handler(RequestValidationError, re_raise_exception)
+    app.add_exception_handler(StarletteHTTPException, re_raise_exception)
 
     v1 = APIRouter(prefix="/api/v1")
     v1.include_router(project.router)
+    v1.include_router(event.router)
 
     app.include_router(v1)
     app.include_router(healthz.router)
@@ -31,6 +60,9 @@ def create_app() -> FastAPI:
         ApplicationProvider(),
         SettingsProvider(),
         LoggerProvider(),
+        CacheProvider(),
+        ApiKeyProvider(),
+        FastapiProvider(),
     )
     setup_dishka(container, app)
 

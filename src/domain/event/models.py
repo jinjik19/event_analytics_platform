@@ -49,11 +49,11 @@ class Device:
     # --- GETTERS ---
 
     @property
-    def browser(self) -> str:
+    def browser(self) -> str | None:
         return self._browser
 
     @property
-    def os(self) -> str:
+    def os(self) -> str | None:
         return self._os
 
 
@@ -108,7 +108,7 @@ class Event:
         properties: dict[str, str],
         user_properties: dict[str, str],
         device: dict[str, str],
-    ) -> str:
+    ) -> "Event":
         now = datetime.now()
         new_id = generate_uuid()
 
@@ -139,11 +139,11 @@ class Event:
         return self._project_id
 
     @property
-    def user_id(self) -> str:
+    def user_id(self) -> UUID | None:
         return self._user_id
 
     @property
-    def session_id(self) -> UUID:
+    def session_id(self) -> UUID | None:
         return self._session_id
 
     @property
@@ -155,15 +155,15 @@ class Event:
         return self._timestamp
 
     @property
-    def properties(self) -> dict[str, str]:
+    def properties(self) -> Properties:
         return self._properties
 
     @property
-    def user_properties(self) -> dict[str, str]:
+    def user_properties(self) -> UserProperties:
         return self._user_properties
 
     @property
-    def device(self) -> dict[str, str]:
+    def device(self) -> Device:
         return self._device
 
     @property
