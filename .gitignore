@@ -63,7 +63,5 @@ Desktop.ini
 # Cache Files
 *.cache
 .cache/
-cache/
-**/cache/
 .npm/
 .yarn/
