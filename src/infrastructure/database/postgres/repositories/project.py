@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import cast
-
-from uuid6 import UUID
+from uuid import UUID
 
 from domain.exceptions.app import NotFoundError
 from domain.project.models import Project
 from domain.project.types import Plan
+from domain.types import ProjectID
 from infrastructure.database.postgres.base import PostgresBaseRepository
 
 
@@ -36,7 +36,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
 
         return self._map_row_to_entity(row)
 
-    async def get_by_id(self, project_id: str) -> Project:
+    async def get_by_id(self, project_id: ProjectID) -> Project:
         query = """
             SELECT project_id, name, plan, api_key, created_at
             FROM project
@@ -50,12 +50,8 @@ class PostgresProjectRepository(PostgresBaseRepository):
         return self._map_row_to_entity(row)
 
     def _map_row_to_entity(self, row: dict[str, str]) -> Project:
-        """
-        Приватный метод-маппер.
-        Превращает 'грязную' строку БД в чистую Сущность.
-        """
         return Project(
-            project_id=UUID(row["project_id"]),
+            project_id=cast(UUID, row["project_id"]),
             name=row["name"],
             plan=Plan(row["plan"]),
             api_key=row["api_key"],

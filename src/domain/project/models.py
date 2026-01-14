@@ -1,9 +1,11 @@
 import secrets
 from datetime import UTC, datetime
+from typing import cast
 from uuid import UUID
 
-from domain.exceptions.app import InvalidError
+from domain.exceptions.app import InvalidPayloadError
 from domain.project.types import Plan
+from domain.types import ProjectID
 from domain.utils.generate_uuid import generate_uuid
 
 
@@ -39,8 +41,8 @@ class Project:
     # --- GETTERS ---
 
     @property
-    def project_id(self) -> UUID:
-        return self._project_id
+    def project_id(self) -> ProjectID:
+        return cast(ProjectID, self._project_id)
 
     @property
     def api_key(self) -> str:
@@ -60,11 +62,9 @@ class Project:
     def name(self, value: str) -> None:
         cleaned_name = value.strip()
         if len(cleaned_name) < 3:
-            # TODO: Replace with proper exception
-            raise InvalidError("Project name must be at least 3 chars long.")
+            raise InvalidPayloadError("Project name must be at least 3 chars long.")
         if len(cleaned_name) > 100:
-            # TODO: Replace with proper exception
-            raise InvalidError("Project name must be shorter than 100 chars.")
+            raise InvalidPayloadError("Project name must be shorter than 100 chars.")
 
         self._name = value
 
@@ -82,9 +82,9 @@ class Project:
             try:
                 self._plan = Plan(value)
             except ValueError as exc:
-                raise InvalidError(f"Plan '{value}' is not valid.") from exc
+                raise InvalidPayloadError(f"Plan '{value}' is not valid.") from exc
         else:
-            raise InvalidError("Invalid type for plan.")
+            raise InvalidPayloadError("Invalid type for plan.")
 
     # --- MAGIC METHODS ---
 
