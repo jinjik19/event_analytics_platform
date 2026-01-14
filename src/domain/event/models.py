@@ -9,7 +9,7 @@ class Properties:
 
     def __init__(
         self,
-        page_url: str,
+        page_url: str | None,
         button_clicked: str | None,
     ) -> None:
         self._page_url = page_url
@@ -18,7 +18,7 @@ class Properties:
     # --- GETTERS ---
 
     @property
-    def page_url(self) -> str:
+    def page_url(self) -> str | None:
         return self._page_url
 
     @property
@@ -75,8 +75,8 @@ class Event:
         self,
         event_id: UUID,
         project_id: UUID,
-        user_id: str,
-        session_id: UUID,
+        user_id: UUID | None,
+        session_id: UUID | None,
         event_type: str,
         timestamp: datetime,
         properties: Properties,
@@ -101,8 +101,8 @@ class Event:
     def create(
         cls,
         project_id: UUID,
-        user_id: str,
-        session_id: UUID,
+        user_id: UUID | None,
+        session_id: UUID | None,
         event_type: str,
         timestamp: datetime,
         properties: dict[str, str],
@@ -112,7 +112,21 @@ class Event:
         now = datetime.now()
         new_id = generate_uuid()
 
-        return cls(event_id=new_id, project_id=project_id, created_at=now)
+        return cls(
+            event_id=new_id,
+            project_id=project_id,
+            user_id=user_id,
+            session_id=session_id,
+            event_type=event_type,
+            timestamp=timestamp,
+            properties=Properties(
+                page_url=properties.get("page_url"),
+                button_clicked=properties.get("button_clicked"),
+            ),
+            user_properties=UserProperties(country=user_properties.get("country")),
+            device=Device(browser=device.get("browser"), os=device.get("os")),
+            created_at=now,
+        )
 
     # --- GETTERS ---
 
