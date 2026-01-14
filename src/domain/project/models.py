@@ -1,10 +1,10 @@
 import secrets
 from datetime import UTC, datetime
-
-from uuid6 import UUID, uuid7
+from uuid import UUID
 
 from domain.project.exceptions import InvalidProjectNameError, InvalidProjectPlanError
 from domain.project.types import Plan
+from domain.utils.generate_uuid import generate_uuid
 
 
 class Project:
@@ -30,7 +30,7 @@ class Project:
     @classmethod
     def create(cls, name: str, plan: Plan, env: str = "prod") -> "Project":
         now = datetime.now(UTC)
-        new_id = uuid7()
+        new_id = generate_uuid()
         random_part = secrets.token_urlsafe(32)
         new_api_key = f"wk_{env}_{random_part}"
 
