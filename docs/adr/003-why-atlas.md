@@ -7,7 +7,7 @@ Status: Accepted
 
 The platform relies on `asyncpg` for high-performance asynchronous database interactions with PostgreSQL.
 
-The standard Python migration tool, **Alembic**, requires **SQLAlchemy** as a core dependency. Since our application does not use an ORM, including SQLAlchemy solely for migrations introduces significant downsides:
+The standard Python migration tool, **Alembic**, requires **SQLAlchemy** as a core dependency. Since my application does not use an ORM, including SQLAlchemy solely for migrations introduces significant downsides:
 
 1.  **Dependency Bloat:** Increases Docker image size and installation time.
 2.  **Maintenance Overhead:** Requires managing versions of a complex library that is not used in runtime logic.
