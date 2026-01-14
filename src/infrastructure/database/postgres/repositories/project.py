@@ -3,7 +3,7 @@ from typing import cast
 
 from uuid6 import UUID
 
-from domain.project.exceptions import ProjectNotFoundError
+from domain.exceptions.app import NotFoundError
 from domain.project.models import Project
 from domain.project.types import Plan
 from infrastructure.database.postgres.base import PostgresBaseRepository
@@ -32,7 +32,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
         row = await self.fetch_one(query, api_key)
 
         if not row:
-            raise ProjectNotFoundError(f"Project by api_key {api_key} not Found")
+            raise NotFoundError(f"Project by api_key {api_key} not Found")
 
         return self._map_row_to_entity(row)
 
@@ -45,7 +45,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
         row = await self.fetch_one(query, project_id)
 
         if not row:
-            raise ProjectNotFoundError(f"Project by id {project_id} not found")
+            raise NotFoundError(f"Project by id {project_id} not found")
 
         return self._map_row_to_entity(row)
 

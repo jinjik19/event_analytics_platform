@@ -4,7 +4,8 @@ from fastapi import APIRouter, FastAPI
 
 from entrypoint.api.lifespan import lifespan
 from entrypoint.api.middleware.logger import StructlogMiddleware
-from entrypoint.api.routers import healthz, project
+from entrypoint.api.routers import healthz
+from entrypoint.api.routers.v1.ingestion import project
 from infrastructure.database.postgres.providers import DbProvider
 from infrastructure.di.providers.application import ApplicationProvider
 from infrastructure.di.providers.logger import LoggerProvider

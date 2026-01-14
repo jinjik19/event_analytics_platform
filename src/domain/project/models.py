@@ -2,7 +2,7 @@ import secrets
 from datetime import UTC, datetime
 from uuid import UUID
 
-from domain.project.exceptions import InvalidProjectNameError, InvalidProjectPlanError
+from domain.exceptions.app import InvalidError
 from domain.project.types import Plan
 from domain.utils.generate_uuid import generate_uuid
 
@@ -61,10 +61,10 @@ class Project:
         cleaned_name = value.strip()
         if len(cleaned_name) < 3:
             # TODO: Replace with proper exception
-            raise InvalidProjectNameError("Project name must be at least 3 chars long.")
+            raise InvalidError("Project name must be at least 3 chars long.")
         if len(cleaned_name) > 100:
             # TODO: Replace with proper exception
-            raise InvalidProjectNameError("Project name must be shorter than 100 chars.")
+            raise InvalidError("Project name must be shorter than 100 chars.")
 
         self._name = value
 
@@ -82,9 +82,9 @@ class Project:
             try:
                 self._plan = Plan(value)
             except ValueError as exc:
-                raise InvalidProjectPlanError(f"Plan '{value}' is not valid.") from exc
+                raise InvalidError(f"Plan '{value}' is not valid.") from exc
         else:
-            raise InvalidProjectPlanError("Invalid type for plan.")
+            raise InvalidError("Invalid type for plan.")
 
     # --- MAGIC METHODS ---
 
