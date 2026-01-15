@@ -105,9 +105,9 @@ class Event:
         session_id: UUID | None,
         event_type: str,
         timestamp: datetime,
-        properties: dict[str, str],
-        user_properties: dict[str, str],
-        device: dict[str, str],
+        properties: Properties,
+        user_properties: UserProperties,
+        device: Device,
     ) -> "Event":
         now = datetime.now()
         new_id = generate_uuid()
@@ -119,12 +119,9 @@ class Event:
             session_id=session_id,
             event_type=event_type,
             timestamp=timestamp,
-            properties=Properties(
-                page_url=properties.page_url,
-                button_clicked=properties.button_clicked,
-            ),
-            user_properties=UserProperties(country=user_properties.country),
-            device=Device(browser=device.browser, os=device.os),
+            properties=properties,
+            user_properties=user_properties,
+            device=device,
             created_at=now,
         )
 
