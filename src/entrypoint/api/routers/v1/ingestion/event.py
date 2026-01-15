@@ -2,9 +2,9 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, status
 
 from application.common.error_response import RESPONSE
-from application.events.schemas.ingest_dto import IngestEventDTO
-from application.events.schemas.response_dto import IngestEventResponseDTO
-from application.events.services.ingest import IngestEventService
+from application.event.schemas.ingest_dto import IngestEventDTO
+from application.event.schemas.response_dto import IngestEventResponseDTO
+from application.event.services.ingest import IngestEventService
 from domain.types import ProjectID
 
 

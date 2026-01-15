@@ -120,11 +120,11 @@ class Event:
             event_type=event_type,
             timestamp=timestamp,
             properties=Properties(
-                page_url=properties.get("page_url"),
-                button_clicked=properties.get("button_clicked"),
+                page_url=properties.page_url,
+                button_clicked=properties.button_clicked,
             ),
-            user_properties=UserProperties(country=user_properties.get("country")),
-            device=Device(browser=device.get("browser"), os=device.get("os")),
+            user_properties=UserProperties(country=user_properties.country),
+            device=Device(browser=device.browser, os=device.os),
             created_at=now,
         )
 

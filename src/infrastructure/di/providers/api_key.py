@@ -5,6 +5,7 @@ from application.common.uow import IUnitOfWork
 from domain.cache.repository import Cache
 from domain.exceptions.app import UnauthorizedError
 from domain.types import ProjectID
+from infrastructure.config.settings import Settings
 
 
 class ApiKeyProvider(Provider):
@@ -16,10 +17,14 @@ class ApiKeyProvider(Provider):
         request: Request,
         uow: IUnitOfWork,
         cache: Cache,
+        settings: Settings,
     ) -> ProjectID:
         api_key = request.headers.get("X-Api-Key")
         if not api_key:
             raise UnauthorizedError("Missing API Key")
+
+        if not api_key.startswith(f"wk_{settings.app_env}"):
+            raise UnauthorizedError("Bad API Key")
 
         if cached_project_id := await cache.get(api_key):
             return ProjectID(cached_project_id)

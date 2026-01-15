@@ -1,4 +1,3 @@
-import secrets
 from datetime import UTC, datetime
 from typing import cast
 from uuid import UUID
@@ -6,6 +5,7 @@ from uuid import UUID
 from domain.exceptions.app import InvalidPayloadError
 from domain.project.types import Plan
 from domain.types import ProjectID
+from domain.utils.generate_api_key import generate_api_key
 from domain.utils.generate_uuid import generate_uuid
 
 
@@ -33,8 +33,7 @@ class Project:
     def create(cls, name: str, plan: Plan, env: str = "prod") -> "Project":
         now = datetime.now(UTC)
         new_id = generate_uuid()
-        random_part = secrets.token_urlsafe(32)
-        new_api_key = f"wk_{env}_{random_part}"
+        new_api_key = generate_api_key(env)
 
         return cls(project_id=new_id, name=name, plan=plan, api_key=new_api_key, created_at=now)
 

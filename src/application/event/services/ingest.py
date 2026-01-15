@@ -2,8 +2,8 @@ from uuid import UUID
 
 from structlog import BoundLogger
 
-from application.events.schemas.ingest_dto import IngestEventDTO
-from domain.event.models import Event
+from application.event.schemas.ingest_dto import IngestEventDTO
+from domain.event.models import Device, Event, Properties, UserProperties
 from infrastructure.config.settings import Settings
 
 
@@ -20,9 +20,9 @@ class IngestEventService:
             session_id=data.session_id,
             event_type=data.event_type,
             timestamp=data.timestamp,
-            properties=data.properties.model_dump(),
-            user_properties=data.user_properties.model_dump(),
-            device=data.device.model_dump(),
+            properties=Properties(**data.properties.model_dump()),
+            user_properties=UserProperties(**data.user_properties.model_dump()),
+            device=Device(**data.device.model_dump()),
         )
 
         self._logger.info("Event ingested", event_id=str(new_event.event_id))

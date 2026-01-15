@@ -6,6 +6,7 @@ from domain.event.models import Device, Event, Properties, UserProperties
 from domain.exceptions.app import NotFoundError
 from domain.types import ProjectID
 from infrastructure.database.postgres.base import PostgresBaseRepository
+from infrastructure.serialization.object_to_dict import ObjectDictSerializer
 
 
 class PostgresEventRepository(PostgresBaseRepository):
@@ -24,7 +25,7 @@ class PostgresEventRepository(PostgresBaseRepository):
                     device,
                     created_at
                 )
-                VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+                VALUES($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10)
             """,
             event.event_id,
             event.project_id,
@@ -32,9 +33,9 @@ class PostgresEventRepository(PostgresBaseRepository):
             event.session_id,
             event.event_type,
             event.timestamp,
-            event.properties,
-            event.user_properties,
-            event.device,
+            ObjectDictSerializer.to_dict(event.properties),
+            ObjectDictSerializer.to_dict(event.user_properties),
+            ObjectDictSerializer.to_dict(event.device),
             event.created_at,
         )
 

@@ -11,11 +11,11 @@ from entrypoint.api.middleware.logger import StructlogMiddleware
 from entrypoint.api.routers import healthz
 from entrypoint.api.routers.v1.ingestion import event, project
 from infrastructure.config.settings import AppEnv, settings
-from infrastructure.database.postgres.providers import DbProvider
 from infrastructure.di.providers.api_key import ApiKeyProvider
 from infrastructure.di.providers.application import ApplicationProvider
 from infrastructure.di.providers.cache import CacheProvider
 from infrastructure.di.providers.logger import LoggerProvider
+from infrastructure.di.providers.postgres import DbProvider
 from infrastructure.di.providers.settings import SettingsProvider
 
 

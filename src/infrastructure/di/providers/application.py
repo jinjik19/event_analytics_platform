@@ -2,7 +2,7 @@ from dishka import Provider, Scope, provide
 from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
-from application.events.services.ingest import IngestEventService
+from application.event.services.ingest import IngestEventService
 from application.project.services.create import CreateProjectService
 from infrastructure.config.settings import Settings
 

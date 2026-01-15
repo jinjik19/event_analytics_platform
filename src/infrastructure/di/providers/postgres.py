@@ -5,13 +5,19 @@ from dishka import Provider, Scope, provide
 
 from application.common.uow import IUnitOfWork
 from infrastructure.config.settings import Settings
+from infrastructure.database.postgres.init import init_postgres_connection
 from infrastructure.database.postgres.uow import PostgresUnitOfWork
 
 
 class DbProvider(Provider):
     @provide(scope=Scope.APP)
     async def get_db_pool(self, settings: Settings) -> AsyncGenerator[asyncpg.Pool]:
-        pool = await asyncpg.create_pool(dsn=settings.db_dsn, min_size=1, max_size=10)
+        pool = await asyncpg.create_pool(
+            dsn=settings.db_dsn,
+            min_size=1,
+            max_size=10,
+            init=init_postgres_connection,
+        )
         try:
             yield pool
         finally:
