@@ -20,7 +20,8 @@ class ApplicationProvider(Provider):
     @provide(scope=Scope.REQUEST)
     async def get_ingest_event_service(
         self,
+        uow: IUnitOfWork,
         logger: BoundLogger,
         settings: Settings,
     ) -> IngestEventService:
-        return IngestEventService(logger, settings)
+        return IngestEventService(uow, logger, settings)

@@ -2,13 +2,15 @@ from uuid import UUID
 
 from structlog import BoundLogger
 
+from application.common.uow import IUnitOfWork
 from application.event.schemas.ingest_dto import IngestEventDTO
 from domain.event.models import Device, Event, Properties, UserProperties
 from infrastructure.config.settings import Settings
 
 
 class IngestEventService:
-    def __init__(self, logger: BoundLogger, settings: Settings) -> None:
+    def __init__(self, uow: IUnitOfWork, logger: BoundLogger, settings: Settings) -> None:
+        self._uow = uow
         self._logger = logger
         self._settings = settings
 
@@ -24,6 +26,10 @@ class IngestEventService:
             user_properties=UserProperties(**data.user_properties.model_dump()),
             device=Device(**data.device.model_dump()),
         )
+
+        async with self._uow:
+            await self._uow.event.add(new_event)
+            await self._uow.commit()
 
         self._logger.info("Event ingested", event_id=str(new_event.event_id))
         return new_event.event_id

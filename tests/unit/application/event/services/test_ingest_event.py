@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import AsyncMock
 from uuid import UUID
 
 from application.event.schemas.ingest_dto import IngestEventDTO, PropertiesDTO, UserPropertiesDTO, DeviceDTO
@@ -7,7 +8,8 @@ from domain.utils.generate_uuid import generate_uuid
 
 
 async def test_ingest_event_service(mock_uow, mock_logger, test_settings):
-    service = IngestEventService(logger=mock_logger, settings=test_settings)
+    mock_uow.event = AsyncMock()
+    service = IngestEventService(uow=mock_uow, logger=mock_logger, settings=test_settings)
     project_id = generate_uuid()
     dto = IngestEventDTO(
         user_id=generate_uuid(),
