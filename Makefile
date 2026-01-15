@@ -53,8 +53,8 @@ test:
 test-unit:
 	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/unit -v
 
-test-e2e:
-	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/e2e -v
+test-integrations:
+	APP_ENV=$(APP_ENV_TEST) uv run pytest tests/integrations -v
 
 test-cov:
 	APP_ENV=$(APP_ENV_TEST) uv run pytest --cov=src tests

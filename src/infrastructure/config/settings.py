@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     app_name: str = "event_analytics_platform"
     app_env: AppEnv = AppEnv.DEV
+    debug: bool = False
 
     # Logs
     log_level: LogLevel = LogLevel.INFO

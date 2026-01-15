@@ -1,11 +1,13 @@
 from types import TracebackType
 from typing import Protocol
 
+from domain.event.repository import IEventRepository
 from domain.project.repository import IProjectRepository
 
 
 class IUnitOfWork(Protocol):
     project: IProjectRepository
+    event: IEventRepository
 
     async def commit(self) -> None: ...
     async def rollback(self) -> None: ...
