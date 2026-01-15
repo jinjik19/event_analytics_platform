@@ -20,3 +20,20 @@ async def test_create_project_success(client: AsyncClient):
     assert "project_id" in data
     assert "api_key" in data
     assert "created_at" in data
+
+
+@pytest.mark.asyncio
+async def test_create_project_failed(client: AsyncClient):
+    app = client._transport.app
+
+    body = {
+        "name": "T",
+        "plan": "free",
+    }
+
+    response = await client.post("/api/v1/project", json=body)
+
+    assert response.status_code == 422
+
+    data = response.json()
+    assert data["code"] == "ValidationError"

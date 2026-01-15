@@ -1,5 +1,3 @@
-import asyncio
-import os
 import subprocess
 from typing import AsyncGenerator, Generator
 from unittest.mock import patch
@@ -14,6 +12,9 @@ from testcontainers.postgres import PostgresContainer
 
 from entrypoint.api.main import create_app
 from infrastructure.config.settings import Settings
+from infrastructure.database.postgres.init import init_postgres_connection
+from infrastructure.database.postgres.repositories.event import PostgresEventRepository
+from infrastructure.database.postgres.repositories.project import PostgresProjectRepository
 
 
 ATLAS_REVISION_TABLE = "atlas_schema_revisions"
@@ -37,8 +38,8 @@ def postgres_container() -> Generator[PostgresContainer, None, None]:
     postgres.stop()
 
 
-@pytest_asyncio.fixture(scope="session")
-async def db_settings(postgres_container: PostgresContainer) -> Settings:
+@pytest.fixture(scope="session")
+def db_settings(postgres_container: PostgresContainer) -> Settings:
     db_host = postgres_container.get_container_host_ip()
     db_port = postgres_container.get_exposed_port(5432)
 
@@ -51,8 +52,9 @@ async def db_settings(postgres_container: PostgresContainer) -> Settings:
         db_password=TEST_DB_PASSWORD,
     )
 
-@pytest_asyncio.fixture(scope="session")
-async def apply_migrations(db_settings: Settings):
+
+@pytest.fixture(scope="session")
+def apply_migrations(db_settings: Settings):
     dsn = str(db_settings.db_dsn) \
         .replace("postgresql+asyncpg://", "postgres://") \
         .replace("postgresql://", "postgres://")
@@ -69,7 +71,7 @@ async def apply_migrations(db_settings: Settings):
         pytest.fail(f"Failed to apply Atlas migrations:\n{error_message}")
 
 
-@pytest_asyncio.fixture(scope="session")
+@pytest_asyncio.fixture
 async def app(apply_migrations, db_settings: Settings) -> AsyncGenerator[FastAPI, None]:
     class TestSettingsProvider(Provider):
         @provide(scope=Scope.APP)
@@ -90,6 +92,8 @@ async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
 @pytest_asyncio.fixture(scope="function")
 async def db_conn(db_settings: Settings) -> AsyncGenerator[asyncpg.Connection, None]:
     conn = await asyncpg.connect(db_settings.db_dsn)
+    await init_postgres_connection(conn)
+
     yield conn
     await conn.close()
 
@@ -113,3 +117,13 @@ async def clean_tables(db_conn: asyncpg.Connection):
     await db_conn.execute(
         f"TRUNCATE TABLE {', '.join(tables_to_truncate)} RESTART IDENTITY CASCADE;"
     )
+
+
+@pytest_asyncio.fixture
+async def project_repository(db_conn):
+    return PostgresProjectRepository(connection=db_conn)
+
+
+@pytest_asyncio.fixture
+async def event_repository(db_conn):
+    return PostgresEventRepository(connection=db_conn)
