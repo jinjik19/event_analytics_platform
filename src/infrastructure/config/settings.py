@@ -41,9 +41,23 @@ class Settings(BaseSettings):
     # redis/valkey
     valkey_url: str = "redis://localhost:6379/0"
 
+    # Rate Limiting (requests per minute)
+    rate_limit_enabled: bool = False
+    rate_limit_free_rpm: int = 100
+    rate_limit_pro_rpm: int = 1000
+    rate_limit_enterprise_rpm: int = 10000
+    rate_limit_no_auth_rpm: int = 10  # fallback without API key
+    rate_limit_project_create_rpm: int = 5
+
     @property
     def is_prod(self) -> bool:
         return self.app_env == AppEnv.PROD
+
+    @property
+    def is_rate_limit_enabled(self) -> bool:
+        if self.app_env == AppEnv.TEST:
+            return False
+        return self.rate_limit_enabled
 
     @computed_field
     def db_dsn(self) -> str:

@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
 
     yield
 
-    if settings.is_rate_limit_enabled and redis_conn:
+    if settings.is_rate_limit_enabled:
         await FastAPILimiter.close()
 
     await redis_conn.close()
