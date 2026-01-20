@@ -38,8 +38,8 @@ class Settings(BaseSettings):
     db_port: int = 5432
     db_name: str = "database"
 
-    # broker
-    broker_url: str = "redis://localhost:6379/0"
+    # redis/valkey
+    valkey_url: str = "redis://localhost:6379/0"
 
     @property
     def is_prod(self) -> bool:

@@ -5,9 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aioredis>=2.0.1",
     "asyncpg>=0.31.0",
     "cachetools>=6.2.4",
     "dishka>=1.7.2",
+    "fastapi-limiter>=0.1.6",
     "fastapi[standard]>=0.128.0",
     "granian>=2.6.0",
     "httpx>=0.28.1",
