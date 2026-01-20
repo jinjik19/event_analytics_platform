@@ -16,6 +16,7 @@ from infrastructure.di.providers.application import ApplicationProvider
 from infrastructure.di.providers.cache import CacheProvider
 from infrastructure.di.providers.logger import LoggerProvider
 from infrastructure.di.providers.postgres import DbProvider
+from infrastructure.di.providers.rate_limit import RateLimitProvider
 from infrastructure.di.providers.settings import SettingsProvider
 
 
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
         LoggerProvider(),
         CacheProvider(),
         ApiKeyProvider(),
+        RateLimitProvider(),
         FastapiProvider(),
     )
     setup_dishka(container, app)
