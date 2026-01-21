@@ -12,6 +12,7 @@ EXCEPTION_TO_STATUS_CODE = {
     "NotFoundError": status.HTTP_404_NOT_FOUND,
     "UnauthorizedError": status.HTTP_401_UNAUTHORIZED,
     "ValidationError": status.HTTP_422_UNPROCESSABLE_ENTITY,
+    "RateLimitExceededError": status.HTTP_429_TOO_MANY_REQUESTS,
 }
 
 

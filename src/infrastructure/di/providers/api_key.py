@@ -26,11 +26,12 @@ class ApiKeyProvider(Provider):
         if not api_key.startswith(f"wk_{settings.app_env}"):
             raise UnauthorizedError("Bad API Key")
 
-        if cached_project_id := await cache.get(api_key):
+        cache_api_key = f"api_key:{api_key}"
+        if cached_project_id := await cache.get(cache_api_key):
             return ProjectID(cached_project_id)
 
         if project := await uow.project.get_by_api_key(api_key):
-            await cache.set(api_key, project.project_id)
+            await cache.set(cache_api_key, project.project_id)
             return project.project_id
 
         raise UnauthorizedError("Invalid API Key")
