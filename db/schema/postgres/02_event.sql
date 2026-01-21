@@ -1,13 +1,11 @@
 CREATE TABLE IF NOT EXISTS event(
     event_id UUID PRIMARY KEY,
     project_id UUID NOT NULL,
-    user_id UUID,
-    session_id UUID,
-    event_type VARCHAR(100),
+    user_id TEXT,
+    session_id TEXT,
+    event_type TEXT,
     timestamp TIMESTAMPTZ NOT NULL,
     properties JSONB,
-    user_properties JSONB,
-    device JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     FOREIGN KEY (project_id) REFERENCES "public"."project"(project_id) ON DELETE CASCADE
 );
