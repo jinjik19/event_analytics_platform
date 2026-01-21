@@ -65,6 +65,13 @@ class ExceptionHandlerMiddleware:
         self, exc: ValidationError | RequestValidationError
     ) -> ORJSONResponse:
         errors = exc.errors() if hasattr(exc, "errors") else []
+
+        for err in errors:
+            if "ctx" in err:
+                for key, value in err["ctx"].items():
+                    if isinstance(value, Exception):
+                        err["ctx"][key] = str(value)
+
         payload = cast(list[dict[str, Any]], errors)
 
         error = ApiError(ApiValidationError(payload=payload, debug=repr(exc)))

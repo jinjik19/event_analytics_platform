@@ -25,12 +25,15 @@ class PlanBasedRateLimiter:
             return
 
         api_key = request.headers.get("X-Api-Key")
-        identifier, rpm = await self._get_identifier_and_rpm(api_key, request)
+        identifier_str, rpm = await self._get_identifier_and_rpm(api_key, request)
+
+        async def get_identifier(request: Request) -> str:
+            return identifier_str
 
         limiter = RateLimiter(
             times=rpm,
             seconds=60,
-            identifier=lambda req: identifier,
+            identifier=get_identifier,
         )
 
         try:
@@ -92,12 +95,15 @@ class IPRateLimiter:
         #     return  # No rate limit for valid secret token
 
         client_ip = request.client.host if request.client else "unknown"
-        identifier = f"project_create:{client_ip}"
+        identifier_str = f"project_create:{client_ip}"
+
+        async def get_identifier(request: Request) -> str:
+            return identifier_str
 
         limiter = RateLimiter(
             times=self._settings.rate_limit_project_create_rpm,
             seconds=60,
-            identifier=lambda req: identifier,
+            identifier=get_identifier,
         )
 
         try:
