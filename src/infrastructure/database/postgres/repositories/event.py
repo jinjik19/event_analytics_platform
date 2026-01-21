@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, cast
 from uuid import UUID
 
-from domain.event.models import Device, Event, Properties, UserProperties
+from domain.event.models import Event, Properties
 from domain.exceptions.app import NotFoundError
 from domain.types import ProjectID
 from infrastructure.database.postgres.base import PostgresBaseRepository
@@ -21,11 +21,9 @@ class PostgresEventRepository(PostgresBaseRepository):
                     event_type,
                     timestamp,
                     properties,
-                    user_properties,
-                    device,
                     created_at
                 )
-                VALUES($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10)
+                VALUES($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
             """,
             event.event_id,
             event.project_id,
@@ -34,8 +32,6 @@ class PostgresEventRepository(PostgresBaseRepository):
             event.event_type,
             event.timestamp,
             ObjectDictSerializer.to_dict(event.properties),
-            ObjectDictSerializer.to_dict(event.user_properties),
-            ObjectDictSerializer.to_dict(event.device),
             event.created_at,
         )
 
@@ -51,8 +47,6 @@ class PostgresEventRepository(PostgresBaseRepository):
                 event_type,
                 timestamp,
                 properties,
-                user_properties,
-                device,
                 created_at
             FROM event
             WHERE project_id = $1
@@ -74,8 +68,6 @@ class PostgresEventRepository(PostgresBaseRepository):
                 event_type,
                 timestamp,
                 properties,
-                user_properties,
-                device,
                 created_at
             FROM event
             WHERE event_id = $1
@@ -96,7 +88,5 @@ class PostgresEventRepository(PostgresBaseRepository):
             event_type=row["event_type"],
             timestamp=cast(datetime, row["timestamp"]),
             properties=Properties(**row["properties"]),
-            user_properties=UserProperties(**row["user_properties"]),
-            device=Device(**row["device"]),
             created_at=cast(datetime, row["created_at"]),
         )

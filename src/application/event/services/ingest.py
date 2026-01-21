@@ -4,7 +4,7 @@ from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
 from application.event.schemas.ingest_dto import IngestEventDTO
-from domain.event.models import Device, Event, Properties, UserProperties
+from domain.event.models import Event, Properties
 from infrastructure.config.settings import Settings
 
 
@@ -23,8 +23,6 @@ class IngestEventService:
             event_type=data.event_type,
             timestamp=data.timestamp,
             properties=Properties(**data.properties.model_dump()),
-            user_properties=UserProperties(**data.user_properties.model_dump()),
-            device=Device(**data.device.model_dump()),
         )
 
         async with self._uow:

@@ -1,6 +1,6 @@
 import pytest
 from domain.exceptions.app import NotFoundError
-from domain.event.models import Device, Properties, UserProperties
+from domain.event.models import Properties
 from domain.utils.generate_uuid import generate_uuid
 
 
@@ -21,13 +21,11 @@ async def test_add_and_get_by_id(event_repository, project_repository, make_even
     assert fetched.event_type == event.event_type
     assert fetched.timestamp == event.timestamp
     assert fetched.created_at == event.created_at
-
     assert fetched.properties.page_url == event.properties.page_url
     assert fetched.properties.button_clicked == event.properties.button_clicked
-
-    assert fetched.user_properties.country == event.user_properties.country
-    assert fetched.device.browser == event.device.browser
-    assert fetched.device.os == event.device.os
+    assert fetched.properties.country == event.properties.country
+    assert fetched.properties.browser == event.properties.browser
+    assert fetched.properties.os == event.properties.os
 
 
 async def test_get_by_project_id_returns_events(event_repository, project_repository, make_event, make_project):
@@ -75,8 +73,6 @@ async def test_add_event_with_nullable_fields(event_repository, project_reposito
         user_id=None,
         session_id=None,
         properties=Properties(page_url=None, button_clicked=None),
-        user_properties=UserProperties(country=None),
-        device=Device(browser=None, os=None),
     )
 
     await event_repository.add(event)
@@ -87,6 +83,6 @@ async def test_add_event_with_nullable_fields(event_repository, project_reposito
     assert fetched.session_id is None
     assert fetched.properties.page_url is None
     assert fetched.properties.button_clicked is None
-    assert fetched.user_properties.country is None
-    assert fetched.device.browser is None
-    assert fetched.device.os is None
+    assert fetched.properties.country is None
+    assert fetched.properties.browser is None
+    assert fetched.properties.os is None
