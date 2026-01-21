@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 import pytest
 from httpx import AsyncClient
 
@@ -14,7 +14,7 @@ async def test_ingest_event_success(client: AsyncClient, project_repository, mak
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
         "event_type": "click",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "properties": {
             "page_url": "http://test.com/page",
             "country": "NZ",
@@ -44,7 +44,7 @@ async def test_ingest_event_validation_error(client: AsyncClient, project_reposi
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
         "event_type": "click",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     response = await client.post(
@@ -67,7 +67,7 @@ async def test_ingest_event_invalid_api_key(client: AsyncClient, project_reposit
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
         "event_type": "click",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
         "properties": {
             "page_url": "http://test.com/page",
             "country": "NZ",

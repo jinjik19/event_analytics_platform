@@ -45,8 +45,8 @@ def make_event():
     def factory(
         *,
         project_id: UUID | None = None,
-        user_id: UUID | None =None,
-        session_id: UUID | None = None,
+        user_id: str | None =None,
+        session_id: str | None = None,
         event_type: EventType = EventType.PAGE_VIEW,
         timestamp: datetime | None = None,
         properties: Properties | None = None,

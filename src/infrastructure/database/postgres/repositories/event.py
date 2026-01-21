@@ -83,8 +83,8 @@ class PostgresEventRepository(PostgresBaseRepository):
         return Event(
             event_id=cast(UUID, row["event_id"]),
             project_id=cast(UUID, row["project_id"]),
-            user_id=cast(UUID, row["user_id"]),
-            session_id=cast(UUID, row["session_id"]),
+            user_id=cast(str, row["user_id"]),
+            session_id=cast(str, row["session_id"]),
             event_type=row["event_type"],
             timestamp=cast(datetime, row["timestamp"]),
             properties=Properties(**row["properties"]),

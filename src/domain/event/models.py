@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from decimal import Decimal
 from uuid import UUID
 
 from domain.event.types import EventType
@@ -10,17 +9,21 @@ from domain.utils.generate_uuid import generate_uuid
 @dataclass(frozen=True, slots=True)
 class Properties:
     page_url: str | None = None
+    # Product context
     product_id: str | None = None
     product_name: str | None = None
     category: str | None = None
-    price: Decimal | None = None
+    price: int | None = None
     quantity: int | None = None
     currency: str | None = None
+    # User context
     country: str | None = None
     browser: str | None = None
     os: str | None = None
     device_type: str | None = None
+    # Marketing
     source: str | None = None
+    # Interaction
     button_clicked: str | None = None
 
 
