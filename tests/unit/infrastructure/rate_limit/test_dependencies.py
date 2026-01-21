@@ -61,21 +61,6 @@ def mock_request() -> MagicMock:
 def mock_response() -> MagicMock:
     return MagicMock()
 
-
-@pytest.fixture
-def make_test_project():
-    def factory(plan: Plan = Plan.FREE) -> Project:
-        return Project(
-            project_id=generate_uuid(),
-            name="Test Project",
-            plan=plan,
-            api_key=f"wk_test_{generate_uuid().hex[:16]}",
-            created_at=datetime.now(UTC),
-        )
-
-    return factory
-
-
 class TestPlanBasedRateLimiter:
     async def test_rate_limit_disabled_returns_early(
         self,
@@ -136,9 +121,9 @@ class TestPlanBasedRateLimiter:
         mock_uow: AsyncMock,
         mock_cache: AsyncMock,
         mock_request: MagicMock,
-        make_test_project,
+        make_project,
     ) -> None:
-        project = make_test_project(plan=Plan.PRO)
+        project = make_project(plan=Plan.PRO)
         mock_cache.get.return_value = str(project.project_id)
         mock_uow.project.get_by_id.return_value = project
 
@@ -161,9 +146,9 @@ class TestPlanBasedRateLimiter:
         mock_uow: AsyncMock,
         mock_cache: AsyncMock,
         mock_request: MagicMock,
-        make_test_project,
+        make_project,
     ) -> None:
-        project = make_test_project(plan=Plan.ENTERPRISE)
+        project = make_project(plan=Plan.ENTERPRISE)
         mock_cache.get.return_value = None
         mock_uow.project.get_by_api_key.return_value = project
 

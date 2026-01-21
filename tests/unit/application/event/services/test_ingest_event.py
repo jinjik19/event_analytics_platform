@@ -1,9 +1,10 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 from uuid import UUID
 
-from application.event.schemas.ingest_dto import IngestEventDTO, PropertiesDTO, UserPropertiesDTO, DeviceDTO
+from application.event.schemas.ingest_dto import IngestEventDTO, PropertiesDTO
 from application.event.services.ingest import IngestEventService
+from domain.event.types import EventType
 from domain.utils.generate_uuid import generate_uuid
 
 
@@ -12,17 +13,13 @@ async def test_ingest_event_service(mock_uow, mock_logger, test_settings):
     service = IngestEventService(uow=mock_uow, logger=mock_logger, settings=test_settings)
     project_id = generate_uuid()
     dto = IngestEventDTO(
-        user_id=generate_uuid(),
-        session_id=generate_uuid(),
-        event_type="test_event",
-        timestamp=datetime.now(),
+        user_id="42",
+        session_id="42",
+        event_type=EventType.PAGE_VIEW,
+        timestamp=datetime.now(UTC),
         properties=PropertiesDTO(
-            page_url="http://test.com",
-        ),
-        user_properties=UserPropertiesDTO(
+            page_url="http://www.example.com",
             country="NZ",
-        ),
-        device=DeviceDTO(
             browser="Chrome",
             os="Windows",
         ),

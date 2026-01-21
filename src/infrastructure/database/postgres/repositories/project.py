@@ -1,6 +1,5 @@
 from datetime import datetime
 from typing import cast
-from uuid import UUID
 
 from domain.exceptions.app import NotFoundError
 from domain.project.models import Project
@@ -51,7 +50,7 @@ class PostgresProjectRepository(PostgresBaseRepository):
 
     def _map_row_to_entity(self, row: dict[str, str]) -> Project:
         return Project(
-            project_id=cast(UUID, row["project_id"]),
+            project_id=cast(ProjectID, row["project_id"]),
             name=row["name"],
             plan=Plan(row["plan"]),
             api_key=row["api_key"],

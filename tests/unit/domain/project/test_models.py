@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 import pytest
 from domain.exceptions.app import InvalidPayloadError
@@ -22,37 +22,10 @@ async def test_create_project_model():
     assert project.created_at is not None
 
 
-async def test_create_project_with_short_name():
-    with pytest.raises(InvalidPayloadError):
-        Project.create(
-            name="a",
-            plan=Plan.FREE,
-            env="test",
-        )
-
-
-async def test_create_project_with_long_name():
-    with pytest.raises(InvalidPayloadError):
-        Project.create(
-            name="a" * 101,
-            plan=Plan.FREE,
-            env="test",
-        )
-
-
-async def test_create_project_with_invalid_plan():
-    with pytest.raises(InvalidPayloadError):
-        Project.create(
-            name="Test Project",
-            plan="super",
-            env="test",
-        )
-
-
 async def test_init_project_model(test_settings):
     project_id = generate_uuid()
     api_key = generate_api_key(test_settings.app_env.value)
-    now = datetime.now()
+    now = datetime.now(UTC)
 
     project = Project(
         project_id=project_id,

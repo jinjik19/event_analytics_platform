@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 import pytest
 from httpx import AsyncClient
 
@@ -13,15 +13,11 @@ async def test_ingest_event_success(client: AsyncClient, project_repository, mak
     body = {
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
-        "event_type": "click",
-        "timestamp": datetime.now().isoformat(),
+        "event_type": "page_view",
+        "timestamp": datetime.now(UTC).isoformat(),
         "properties": {
-            "page_url": "http://test.com/page"
-        },
-        "user_properties": {
+            "page_url": "http://test.com/page",
             "country": "NZ",
-        },
-        "device": {
             "browser": "Chrome",
             "os": "Windows",
         },
@@ -48,7 +44,7 @@ async def test_ingest_event_validation_error(client: AsyncClient, project_reposi
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
         "event_type": "click",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
 
     response = await client.post(
@@ -70,17 +66,14 @@ async def test_ingest_event_invalid_api_key(client: AsyncClient, project_reposit
     body = {
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
-        "event_type": "click",
-        "timestamp": datetime.now().isoformat(),
+        "event_type": "page_view",
+        "timestamp": datetime.now(UTC).isoformat(),
         "properties": {
-            "page_url": "http://test.com/page"
-        },
-        "user_properties": {
+            "page_url": "http://test.com/page",
             "country": "NZ",
-        },
-        "device": {
             "browser": "Chrome",
             "os": "Windows",
+            "device_type": "desktop",
         },
     }
 
