@@ -13,7 +13,7 @@ async def test_ingest_event_success(client: AsyncClient, project_repository, mak
     body = {
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
-        "event_type": "click",
+        "event_type": "page_view",
         "timestamp": datetime.now(UTC).isoformat(),
         "properties": {
             "page_url": "http://test.com/page",
@@ -66,13 +66,14 @@ async def test_ingest_event_invalid_api_key(client: AsyncClient, project_reposit
     body = {
         "user_id": str(generate_uuid()),
         "session_id": str(generate_uuid()),
-        "event_type": "click",
+        "event_type": "page_view",
         "timestamp": datetime.now(UTC).isoformat(),
         "properties": {
             "page_url": "http://test.com/page",
             "country": "NZ",
             "browser": "Chrome",
             "os": "Windows",
+            "device_type": "desktop",
         },
     }
 
