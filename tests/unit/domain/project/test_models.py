@@ -22,9 +22,9 @@ async def test_create_project_model():
     assert project.created_at is not None
 
 
-async def test_init_project_model(test_settings):
+async def test_init_project_model(mock_settings):
     project_id = generate_uuid()
-    api_key = generate_api_key(test_settings.app_env.value)
+    api_key = generate_api_key(mock_settings.app_env.value)
     now = datetime.now(UTC)
 
     project = Project(

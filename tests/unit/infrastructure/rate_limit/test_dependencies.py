@@ -1,11 +1,8 @@
-from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from domain.project.models import Project
 from domain.project.types import Plan
-from domain.utils.generate_uuid import generate_uuid
 from infrastructure.config.settings import AppEnv, Settings
 from infrastructure.rate_limit.dependencies import IPRateLimiter, PlanBasedRateLimiter
 
@@ -30,36 +27,6 @@ def mock_settings_disabled() -> Settings:
     settings.is_rate_limit_enabled = False
     return settings
 
-
-@pytest.fixture
-def mock_uow() -> AsyncMock:
-    uow = AsyncMock()
-    uow.project = AsyncMock()
-    uow.project.get_by_api_key = AsyncMock(return_value=None)
-    uow.project.get_by_id = AsyncMock(return_value=None)
-    return uow
-
-
-@pytest.fixture
-def mock_cache() -> AsyncMock:
-    cache = AsyncMock()
-    cache.get = AsyncMock(return_value=None)
-    cache.set = AsyncMock()
-    return cache
-
-
-@pytest.fixture
-def mock_request() -> MagicMock:
-    request = MagicMock()
-    request.headers = {}
-    request.client = MagicMock()
-    request.client.host = "127.0.0.1"
-    return request
-
-
-@pytest.fixture
-def mock_response() -> MagicMock:
-    return MagicMock()
 
 class TestPlanBasedRateLimiter:
     async def test_rate_limit_disabled_returns_early(
@@ -223,38 +190,122 @@ class TestIPRateLimiter:
     async def test_rate_limit_disabled_returns_early(
         self,
         mock_settings_disabled: Settings,
+        mock_validator: MagicMock,
         mock_request: MagicMock,
         mock_response: MagicMock,
     ) -> None:
-        limiter = IPRateLimiter(settings=mock_settings_disabled)
+        limiter = IPRateLimiter(
+            settings=mock_settings_disabled, token_validator=mock_validator
+        )
 
-        # Should not raise any exception
         await limiter(mock_request, mock_response)
 
     async def test_ip_limiter_uses_client_ip(
         self,
         mock_settings: Settings,
+        mock_validator: MagicMock,
         mock_request: MagicMock,
         mock_response: MagicMock,
     ) -> None:
         mock_settings.is_rate_limit_enabled = False
         mock_request.client.host = "10.0.0.1"
 
-        limiter = IPRateLimiter(settings=mock_settings)
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
 
-        # Should complete without error when rate limiting is disabled
         await limiter(mock_request, mock_response)
 
     async def test_ip_limiter_handles_no_client(
         self,
         mock_settings: Settings,
+        mock_validator: MagicMock,
         mock_request: MagicMock,
         mock_response: MagicMock,
     ) -> None:
         mock_settings.is_rate_limit_enabled = False
         mock_request.client = None
 
-        limiter = IPRateLimiter(settings=mock_settings)
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
 
-        # Should complete without error when rate limiting is disabled
         await limiter(mock_request, mock_response)
+
+    async def test_authorized_request_skips_rate_limit(
+        self,
+        mock_settings: Settings,
+        mock_validator: MagicMock,
+        mock_request: MagicMock,
+        mock_response: MagicMock,
+    ) -> None:
+        mock_validator.validate.return_value = True
+        mock_request.headers = {"Authorization": "Bearer valid-token"}
+
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
+
+        await limiter(mock_request, mock_response)
+
+        mock_validator.validate.assert_called_once_with("valid-token")
+
+    def test_is_authorized_valid_token(
+        self,
+        mock_settings: Settings,
+        mock_validator: MagicMock,
+        mock_request: MagicMock,
+    ) -> None:
+        mock_validator.validate.return_value = True
+        mock_request.headers = {"Authorization": "Bearer valid-token"}
+
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
+
+        assert limiter._is_authorized(mock_request) is True
+
+    def test_is_authorized_invalid_token(
+        self,
+        mock_settings: Settings,
+        mock_validator: MagicMock,
+        mock_request: MagicMock,
+    ) -> None:
+        mock_validator.validate.return_value = False
+        mock_request.headers = {"Authorization": "Bearer wrong-token"}
+
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
+
+        assert limiter._is_authorized(mock_request) is False
+
+    def test_is_authorized_no_header(
+        self,
+        mock_settings: Settings,
+        mock_validator: MagicMock,
+        mock_request: MagicMock,
+    ) -> None:
+        mock_request.headers = {}
+
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
+
+        assert limiter._is_authorized(mock_request) is False
+        mock_validator.validate.assert_not_called()
+
+    def test_is_authorized_no_bearer_prefix(
+        self,
+        mock_settings: Settings,
+        mock_validator: MagicMock,
+        mock_request: MagicMock,
+    ) -> None:
+        mock_request.headers = {"Authorization": "Token something"}
+
+        limiter = IPRateLimiter(
+            settings=mock_settings, token_validator=mock_validator
+        )
+
+        assert limiter._is_authorized(mock_request) is False
+        mock_validator.validate.assert_not_called()

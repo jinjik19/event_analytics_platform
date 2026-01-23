@@ -21,6 +21,7 @@ ATLAS_REVISION_TABLE = "atlas_schema_revisions"
 TEST_DB_NAME = "test_db"
 TEST_DB_USER = "test_user"
 TEST_DB_PASSWORD = "test_pass"
+TEST_SECRET_TOKEN = "test-secret-token-12345"
 
 
 @pytest.fixture(scope="session")
@@ -50,6 +51,7 @@ def db_settings(postgres_container: PostgresContainer) -> Settings:
         db_name=TEST_DB_NAME,
         db_user=TEST_DB_USER,
         db_password=TEST_DB_PASSWORD,
+        secret_token=TEST_SECRET_TOKEN,
     )
 
 
@@ -87,6 +89,11 @@ async def app(apply_migrations, db_settings: Settings) -> AsyncGenerator[FastAPI
 async def client(app: FastAPI) -> AsyncGenerator[AsyncClient, None]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
+
+
+@pytest.fixture
+def auth_headers() -> dict[str, str]:
+    return {"Authorization": f"Bearer {TEST_SECRET_TOKEN}"}
 
 
 @pytest_asyncio.fixture(scope="function")

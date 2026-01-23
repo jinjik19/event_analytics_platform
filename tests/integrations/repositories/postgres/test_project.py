@@ -3,8 +3,8 @@ from domain.exceptions.app import NotFoundError
 from domain.utils.generate_uuid import generate_uuid
 
 
-async def test_add_and_get_by_id(project_repository, make_project, test_settings):
-    project = make_project(env=test_settings.app_env)
+async def test_add_and_get_by_id(project_repository, make_project, mock_settings):
+    project = make_project(env=mock_settings.app_env)
 
     # act
     await project_repository.add(project)
