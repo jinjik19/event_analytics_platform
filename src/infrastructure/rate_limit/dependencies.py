@@ -6,6 +6,7 @@ from domain.cache.repository import Cache
 from domain.exceptions.app import RateLimitExceededError
 from infrastructure.config.settings import Settings
 from infrastructure.rate_limit.config import get_plan_rate_limit
+from infrastructure.security.token_validators.secret_token_validator import SecretTokenValidator
 
 
 class PlanBasedRateLimiter:
@@ -82,17 +83,16 @@ class PlanBasedRateLimiter:
 class IPRateLimiter:
     """IP-based rate limiter for project creation and anonymous requests."""
 
-    def __init__(self, settings: Settings) -> None:
+    def __init__(self, settings: Settings, token_validator: SecretTokenValidator) -> None:
         self._settings = settings
+        self._token_validator = token_validator
 
     async def __call__(self, request: Request, response: Response) -> None:
         if not self._settings.is_rate_limit_enabled:
             return
 
-        # Future: Check X-Secret-Token header for admin operations
-        # secret_token = request.headers.get("X-Secret-Token")
-        # if secret_token and validate_secret_token(secret_token):
-        #     return  # No rate limit for valid secret token
+        if self._is_authorized(request):
+            return
 
         client_ip = request.client.host if request.client else "unknown"
         identifier_str = f"project_create:{client_ip}"
@@ -112,3 +112,15 @@ class IPRateLimiter:
             if hasattr(exc, "detail") and "Too Many Requests" in str(exc.detail):
                 raise RateLimitExceededError(retry_after=60) from exc
             raise
+
+    def _is_authorized(self, request: Request) -> bool:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return False
+
+        prefix = "Bearer "
+        if not auth_header.startswith(prefix):
+            return False
+
+        token = auth_header.removeprefix(prefix)
+        return self._token_validator.validate(token)

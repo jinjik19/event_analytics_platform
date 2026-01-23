@@ -8,9 +8,9 @@ from domain.event.types import EventType
 from domain.utils.generate_uuid import generate_uuid
 
 
-async def test_ingest_event_service(mock_uow, mock_logger, test_settings):
+async def test_ingest_event_service(mock_uow, mock_logger, mock_settings):
     mock_uow.event = AsyncMock()
-    service = IngestEventService(uow=mock_uow, logger=mock_logger, settings=test_settings)
+    service = IngestEventService(uow=mock_uow, logger=mock_logger, settings=mock_settings)
     project_id = generate_uuid()
     dto = IngestEventDTO(
         user_id="42",

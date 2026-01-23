@@ -15,8 +15,9 @@ pytest_plugins = ("pytest_asyncio",)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def test_settings() -> Settings:
+def mock_settings() -> Settings:
     settings.app_env = AppEnv.TEST
+    settings.secret_token = "test-secret-token-12345"
     return settings
 
 
