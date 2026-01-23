@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     rate_limit_project_create_rpm: int = 5
 
     # Security
-    secret_token: str
+    secret_token: str = ""
 
     @property
     def is_prod(self) -> bool:
