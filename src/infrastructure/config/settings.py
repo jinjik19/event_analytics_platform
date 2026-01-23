@@ -49,6 +49,9 @@ class Settings(BaseSettings):
     rate_limit_no_auth_rpm: int = 10  # fallback without API key
     rate_limit_project_create_rpm: int = 5
 
+    # Security
+    secret_token: str
+
     @property
     def is_prod(self) -> bool:
         return self.app_env == AppEnv.PROD
