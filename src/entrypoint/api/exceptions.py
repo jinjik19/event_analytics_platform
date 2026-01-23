@@ -13,6 +13,7 @@ EXCEPTION_TO_STATUS_CODE = {
     "UnauthorizedError": status.HTTP_401_UNAUTHORIZED,
     "ValidationError": status.HTTP_422_UNPROCESSABLE_CONTENT,
     "RateLimitExceededError": status.HTTP_429_TOO_MANY_REQUESTS,
+    "ForbiddenError": status.HTTP_403_FORBIDDEN,
 }
 
 
