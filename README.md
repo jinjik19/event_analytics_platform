@@ -46,17 +46,27 @@ _Detailed architecture breakdown:_
 
 ## Roadmap & Progress
 
-I am building this platform in 5 evolution stages to simulate a real-world high-load engineering journey.
+[] Stage 1: Backend Foundation
 
-- [ ] **Stage 1: Ingestion Core** (Current Focus)
-  - [x] Basic project setup & Health API
-  - [ ] High-performance HTTP API (FastAPI)
-  - [ ] Async ingestion queue (Redis)
-  - [x] Docker containerization
-- [ ] **Stage 2: Analytics Layer** (ClickHouse, Aggregations)
-- [ ] **Stage 3: Event-Driven Architecture** (Kafka, Idempotency, Avro)
-- [ ] **Stage 4: Production Ready** (Kubernetes, Prometheus, Grafana)
-- [ ] **Stage 5: Data Platform** (dbt, Data Quality, Catalog)
+    [x] Clean Architecture, DI, UoW.
+
+    [x] High-performance Batch Ingestion (asyncpg + executemany).
+
+    [x] Fail-safe validation strategy.
+
+    [ ] Async Processing
+
+    [ ] Load Testing benchmarks (Locust).
+
+[ ] Stage 2: CDC & OLAP
+
+[ ] Stage 3: Orchestration & Quality
+
+[ ] Stage 4: Production Deploy (VPS)
+
+[ ] Stage 5: Kubernetes
+
+[ ] Stage 6: Cloud Migration
 
 ---
 
@@ -109,26 +119,9 @@ Run migration
 atlas migrate apply --env postgres
 ```
 
+5. OpenAPI/Swagger - http://localhost:8000/docs#/
+
 ---
-
-# Endpoints:
-
-1. Create project
-
-```
-POST /api/v1/project
-BODY: {
-    name: str
-    plan: free | pro | enterprise
-}
-RESPONSE: {
-    project_id: uuid
-    name: str
-    plan: free | pro | enterprise
-    api_key: str
-    created_at: str
-}
-```
 
 📝 License
 
