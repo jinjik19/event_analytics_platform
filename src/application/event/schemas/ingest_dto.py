@@ -96,7 +96,7 @@ class IngestEventBatchDTO(BaseModel):
 
     @field_validator("events", mode="before")
     @classmethod
-    def filter_valid_events(cls, raw_events: Any) -> list[Any]:  # noqa: ANN401
+    def filter_valid_events(cls, raw_events: Any) -> Any:  # noqa: ANN401
         if not isinstance(raw_events, list):
             return raw_events
 
