@@ -15,6 +15,14 @@ class PostgresBaseRepository:
         """
         await self._connection.execute(query, *args)
 
+    async def executemany(self, query: str, *args: object) -> None:
+        """Wrapper for (INSERT, UPDATE, DELETE)
+
+        Attrs:
+            query: SQL query in string format
+        """
+        await self._connection.executemany(query, *args)
+
     async def fetch_one(self, query: str, *args: object) -> asyncpg.Record | None:
         """Wrapper for get one row
 

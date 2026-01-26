@@ -93,3 +93,138 @@ class TestIngestEventValidation:
             properties={}
         )
         assert dto.timestamp.tzinfo == UTC
+
+
+class TestIngestEventBatchDTO:
+    def test_valid_batch_with_all_valid_events(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        raw_events = [
+            {
+                "event_type": "page_view",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {"page_url": "https://example.com/page1"},
+            },
+            {
+                "event_type": "page_view",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {"page_url": "https://example.com/page2"},
+            },
+        ]
+
+        batch = IngestEventBatchDTO(events=raw_events)
+
+        assert len(batch.events) == 2
+        assert all(isinstance(e, IngestEventDTO) for e in batch.events)
+
+    def test_batch_filters_invalid_events(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        raw_events = [
+            {
+                "event_type": "page_view",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {"page_url": "https://example.com/valid"},
+            },
+            {
+                "event_type": "invalid_type",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {},
+            },
+            {
+                "event_type": "purchase",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {},
+            },
+        ]
+
+        batch = IngestEventBatchDTO(events=raw_events)
+
+        assert len(batch.events) == 1
+        assert batch.events[0].event_type == EventType.PAGE_VIEW
+
+    def test_batch_with_all_invalid_events_returns_empty(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        raw_events = [
+            {"event_type": "invalid", "timestamp": "bad", "properties": {}},
+            {"event_type": "purchase", "properties": {}},
+        ]
+
+        batch = IngestEventBatchDTO(events=raw_events)
+
+        assert len(batch.events) == 0
+
+    def test_batch_with_empty_list(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        batch = IngestEventBatchDTO(events=[])
+
+        assert len(batch.events) == 0
+
+    def test_batch_preserves_valid_purchase_events(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        raw_events = [
+            {
+                "event_type": "purchase",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {
+                    "product_id": "prod_123",
+                    "price": 99.99,
+                    "quantity": 2,
+                    "currency": "USD",
+                },
+            },
+        ]
+
+        batch = IngestEventBatchDTO(events=raw_events)
+
+        assert len(batch.events) == 1
+        assert batch.events[0].event_type == EventType.PURCHASE
+        assert batch.events[0].properties.product_id == "prod_123"
+
+    def test_batch_mixed_event_types(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        raw_events = [
+            {
+                "event_type": "page_view",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {"page_url": "https://example.com"},
+            },
+            {
+                "event_type": "product_view",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {"product_id": "prod_1"},
+            },
+            {
+                "event_type": "add_to_cart",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {"product_id": "prod_1"},
+            },
+            {
+                "event_type": "purchase",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "properties": {
+                    "product_id": "prod_1",
+                    "price": 50.00,
+                    "quantity": 1,
+                },
+            },
+        ]
+
+        batch = IngestEventBatchDTO(events=raw_events)
+
+        assert len(batch.events) == 4
+        event_types = [e.event_type for e in batch.events]
+        assert EventType.PAGE_VIEW in event_types
+        assert EventType.PRODUCT_VIEW in event_types
+        assert EventType.ADD_TO_CART in event_types
+        assert EventType.PURCHASE in event_types
+
+    def test_batch_non_list_input_passes_through(self):
+        from application.event.schemas.ingest_dto import IngestEventBatchDTO
+
+        with pytest.raises(ValidationError):
+            IngestEventBatchDTO(events="not a list")

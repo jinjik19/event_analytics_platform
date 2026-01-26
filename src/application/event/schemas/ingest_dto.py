@@ -1,6 +1,7 @@
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
-from pydantic import BaseModel, Field, HttpUrl, field_validator, model_validator
+from pydantic import BaseModel, Field, HttpUrl, ValidationError, field_validator, model_validator
 
 from domain.event.models import Properties
 from domain.event.types import EventType
@@ -88,3 +89,23 @@ class IngestEventDTO(BaseModel):
                     raise ValueError("PRODUCT_VIEW requires product_id")
 
         return self
+
+
+class IngestEventBatchDTO(BaseModel):
+    events: list[IngestEventDTO]
+
+    @field_validator("events", mode="before")
+    @classmethod
+    def filter_valid_events(cls, raw_events: Any) -> Any:  # noqa: ANN401
+        if not isinstance(raw_events, list):
+            return raw_events
+
+        valid_events = []
+        for item in raw_events:
+            try:
+                IngestEventDTO.model_validate(item)
+                valid_events.append(item)
+            except ValidationError:
+                continue
+
+        return valid_events

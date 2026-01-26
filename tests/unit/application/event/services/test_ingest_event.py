@@ -3,6 +3,7 @@ from unittest.mock import AsyncMock
 from uuid import UUID
 
 from application.event.schemas.ingest_dto import IngestEventDTO, PropertiesDTO
+from application.event.schemas.response_dto import IngestEventResponseDTO
 from application.event.services.ingest import IngestEventService
 from domain.event.types import EventType
 from domain.utils.generate_uuid import generate_uuid
@@ -28,6 +29,8 @@ async def test_ingest_event_service(mock_uow, mock_logger, mock_settings):
     result = await service(project_id, dto)
 
     assert result is not None
-    assert isinstance(result, UUID)
+    assert isinstance(result, IngestEventResponseDTO)
+    assert isinstance(result.event_id, UUID)
+    assert result.status == "accepted"
 
     assert mock_logger.info.called
