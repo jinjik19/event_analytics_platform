@@ -4,6 +4,7 @@ from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
 from application.event.schemas.ingest_dto import IngestEventDTO
+from application.event.schemas.response_dto import IngestEventResponseDTO
 from domain.event.models import Event
 from infrastructure.config.settings import Settings
 
@@ -14,7 +15,7 @@ class IngestEventService:
         self._logger = logger
         self._settings = settings
 
-    async def __call__(self, project_id: UUID, data: IngestEventDTO) -> UUID:
+    async def __call__(self, project_id: UUID, data: IngestEventDTO) -> IngestEventResponseDTO:
         self._logger.info("Ingesting event", event_type=data.event_type, project_id=project_id)
         new_event = Event.create(
             project_id=project_id,
@@ -30,4 +31,4 @@ class IngestEventService:
             await self._uow.commit()
 
         self._logger.info("Event ingested", event_id=str(new_event.event_id))
-        return new_event.event_id
+        return IngestEventResponseDTO(event_id=new_event.event_id)

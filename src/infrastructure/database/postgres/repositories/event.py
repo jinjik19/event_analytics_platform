@@ -24,6 +24,8 @@ class PostgresEventRepository(PostgresBaseRepository):
                     created_at
                 )
                 VALUES($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
+                ON CONFLICT
+                DO NOTHING
             """,
             event.event_id,
             event.project_id,
@@ -33,6 +35,38 @@ class PostgresEventRepository(PostgresBaseRepository):
             event.timestamp,
             ObjectDictSerializer.to_dict(event.properties),
             event.created_at,
+        )
+
+    async def add_many(self, events: list[Event]) -> None:
+        await self.executemany(
+            """
+                INSERT INTO event(
+                    event_id,
+                    project_id,
+                    user_id,
+                    session_id,
+                    event_type,
+                    timestamp,
+                    properties,
+                    created_at
+                )
+                VALUES($1, $2, $3, $4, $5, $6, $7::jsonb, $8)
+                ON CONFLICT
+                DO NOTHING
+            """,
+            [
+                (
+                    event.event_id,
+                    event.project_id,
+                    event.user_id,
+                    event.session_id,
+                    event.event_type,
+                    event.timestamp,
+                    ObjectDictSerializer.to_dict(event.properties),
+                    event.created_at,
+                )
+                for event in events
+            ],
         )
 
     async def get_by_project_id(
@@ -50,8 +84,10 @@ class PostgresEventRepository(PostgresBaseRepository):
                 created_at
             FROM event
             WHERE project_id = $1
+            LIMIT $2
+            OFFSET $3
         """
-        rows = await self.fetch_all(query, str(project_id))
+        rows = await self.fetch_all(query, str(project_id), limit, offset)
 
         if not rows:
             return []

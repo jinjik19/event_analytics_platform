@@ -3,6 +3,7 @@ from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
 from application.event.services.ingest import IngestEventService
+from application.event.services.ingest_batch import IngestEventBatchService
 from application.project.services.create import CreateProjectService
 from infrastructure.config.settings import Settings
 
@@ -25,3 +26,12 @@ class ApplicationProvider(Provider):
         settings: Settings,
     ) -> IngestEventService:
         return IngestEventService(uow, logger, settings)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_ingest_event_batch_service(
+        self,
+        uow: IUnitOfWork,
+        logger: BoundLogger,
+        settings: Settings,
+    ) -> IngestEventBatchService:
+        return IngestEventBatchService(uow, logger, settings)
