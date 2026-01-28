@@ -55,9 +55,9 @@ Verify that the monolithic architecture (Direct DB Insert) can handle **1,000 ev
 ### Key Observations
 
 1.  **Throughput Success:** The system sustained ~913 events/sec with 1000 concurrent users. The synchronous architecture can handle the volume.
-2.  **Tail Latency Bottleneck:** While median latency is low (8ms), the **p99 (260ms)** and **Max (2.3s)** latencies show significant degradation.
+2.  **Tail Latency Bottleneck:** While median latency is low (8ms), the **p99 (260ms)** and **Max (900ms)** show significant degradation.
     - **Cause:** Synchronous `INSERT` operations block the request processing. When Postgres buffers fill up or locks occur, the API worker is blocked, causing timeouts for clients.
-3.  **Rate Limiting:** The 11.5% failure rate matches the calculated rejection rate for the single PRO project under this load ($80 \text{ RPS load} > 16 \text{ RPS limit}$), confirming the Rate Limiter logic holds up under stress.
+3.  **Rate Limiting:** The 11.5% failure rate is expected. It matches the calculated rejection rate for the single PRO project plan under this load ($80 \text{ RPS load} > 16 \text{ RPS limit}$), confirming the Rate Limiter logic works correctly.
 
 ---
 
@@ -69,9 +69,9 @@ Verify that the monolithic architecture (Direct DB Insert) can handle **1,000 ev
 | ----------------- | -------------------- | ----------------------------------------------- |
 | **Avg RPS**       | 95.6 req/s           | Limited by DB I/O                               |
 | **Throughput**    | **~19,130 events/s** | (95.6 RPS \* 200 events/batch) 🚀               |
-| **Latency (p50)** | 4,600 ms             | 4.6 seconds delay                               |
-| **Latency (p95)** | 14,000 ms            | 14 seconds delay                                |
-| **Max Latency**   | **43,161 ms**        | Critical congestion                             |
+| **Latency (p50)** | 4.6 s                | Severe delay                                    |
+| **Latency (p95)** | 14.0 s               | Unusable                                        |
+| **Max Latency**   | **43.1 s**           | Critical congestion                             |
 | **Failures**      | 0%                   | DB queue handled the load without dropping data |
 
 ### Graphs
@@ -101,6 +101,6 @@ The system pushed **~19k events/sec** without crashing. However, the synchronous
 ## ✅ Conclusion
 
 Stage 1 is **functionally complete**. We achieved the throughput target.
-**However**, the latency spikes (up to 2 seconds) prove that **Synchronous Ingestion is not viable for scale**.
+**However**, the latency spikes (up to 2 seconds) prove that **Direct-to-DB ingestion**.
 
-**Next Step:** Implement **Stage 2 (Async Processing)** using Redis Streams to decouple the API from the Database and stabilize response times.
+**Next Step:** Implement **Stage 2 (Decoupling API from DB)** using Redis Streams to decouple the API from the Database and stabilize response times.
