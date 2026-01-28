@@ -9,7 +9,7 @@ Verify that the monolithic architecture (Direct DB Insert) can handle **1,000 ev
 ## ⚙️ Configuration
 
 - **App:** FastAPI (1 worker)
-- **DB:** PostgreSQL 17 (asyncpg pool size: 10-25)
+- **DB:** PostgreSQL 17 (asyncpg pool size: 5-10)
 - **Load Profile:** MixedLoadUser (Funnel: PageView -> Purchase)
 - **Test Duration:** 5 minutes
 - **Users:** 1000 concurrent
