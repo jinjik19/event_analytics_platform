@@ -1,4 +1,4 @@
-# 📊 Performance Benchmarks History
+# Performance Benchmarks
 
 This directory contains detailed performance reports for each architectural stage of the Event Analytics Platform.
 
@@ -10,7 +10,7 @@ This directory contains detailed performance reports for each architectural stag
 
 ## Methodology
 
-We use **Locust** for load generation.
+I use **Locust** for load generation.
 
 - **Hardware:** MacBook Pro M3 (Docker Desktop)
 - **Database:** PostgreSQL 17 (default config)

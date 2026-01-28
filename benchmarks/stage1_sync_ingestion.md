@@ -103,7 +103,7 @@ The system pushed **~19k events/sec** without crashing. However, the synchronous
 
 ## ✅ Conclusion
 
-Stage 1 is **functionally complete**. We achieved the throughput target.
+Stage 1 is **functionally complete**. I achieved the throughput target.
 **However**, the latency spikes (up to 2 seconds) prove that **Direct-to-DB ingestion**.
 
 **Next Step:** Implement **Stage 2 (Decoupling API from DB)** using Redis Streams to decouple the API from the Database and stabilize response times.

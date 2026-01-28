@@ -69,7 +69,7 @@ test-cov:
 
 # Load Tests
 
-load-realistic:
+load-realistic-%:
 	@mkdir -p tests/load/results
 	uv run locust -f tests/load/locustfile.py \
 		--host=http://localhost:8000 \
@@ -77,8 +77,8 @@ load-realistic:
 		-u 1000 \
 		-r 50 \
 		-t 5m \
-		--csv=tests/load/results/benchmark_stage1 \
-		--html=tests/load/results/benchmark_stage1.html \
+		--csv=tests/load/results/benchmark_stage$* \
+		--html=tests/load/results/benchmark_stage$*.html \
 		MixedLoadUser
 
 load-stress:
