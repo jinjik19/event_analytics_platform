@@ -6,6 +6,9 @@ FROM python:3.13-slim-bookworm AS builder
 # Copy uv binary from official image
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
+# Set to "true" to include dev dependencies (for seeder, tests, etc.)
+ARG INSTALL_DEV=false
+
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     PYSETUP_PATH="/opt/pysetup" \
@@ -15,7 +18,11 @@ WORKDIR $PYSETUP_PATH
 
 COPY pyproject.toml uv.lock ./
 
-RUN uv sync --frozen --no-install-project --no-cache
+RUN if [ "$INSTALL_DEV" = "true" ]; then \
+        uv sync --frozen --no-install-project --no-cache --group dev; \
+    else \
+        uv sync --frozen --no-install-project --no-cache; \
+    fi
 
 # ----
 # STAGE 2: RUNTIME
