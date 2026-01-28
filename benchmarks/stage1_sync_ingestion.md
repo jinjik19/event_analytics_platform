@@ -27,7 +27,7 @@ Verify that the monolithic architecture (Direct DB Insert) can handle **1,000 ev
 | **Latency (p50)** | 8 ms              | < 30 ms  | Excellent                  |
 | **Latency (p95)** | 59 ms             | < 100 ms | Good                       |
 | **Latency (p99)** | 260 ms            | < 200 ms | Warning (Tail Latency)     |
-| **Max Latency**   | **2.300 ms**      | < 500 ms | Critical Spikes            |
+| **Max Latency**   | **900 ms**        | < 500 ms | Critical Spikes            |
 | **Error Rate**    | 11.5%             | -        | Expected (PRO plan limits) |
 
 ### Graphs
