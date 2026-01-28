@@ -1,4 +1,4 @@
-.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress
 APP_ENV_TEST=test
 
 # Default target
@@ -58,3 +58,29 @@ test-integrations:
 
 test-cov:
 	APP_ENV=$(APP_ENV_TEST) uv run pytest --cov=src tests
+
+# Load Tests
+
+load-realistic:
+	@mkdir -p tests/load/results
+	uv run locust -f tests/load/locustfile.py \
+		--host=http://localhost:8000 \
+		--headless \
+		-u 1000 \
+		-r 50 \
+		-t 5m \
+		--csv=tests/load/results/benchmark_stage1 \
+		--html=tests/load/results/benchmark_stage1.html \
+		MixedLoadUser
+
+load-stress:
+	@mkdir -p tests/load/results
+	uv run locust -f tests/load/locustfile.py \
+		--host=http://localhost:8000 \
+		--headless \
+		-u 500 \
+		-r 50 \
+		-t 3m \
+		--csv=tests/load/results/stress_limit \
+		--html=tests/load/results/stress_limit.html \
+		StressBatchUser
