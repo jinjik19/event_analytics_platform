@@ -14,8 +14,9 @@ class DbProvider(Provider):
     async def get_db_pool(self, settings: Settings) -> AsyncGenerator[asyncpg.Pool]:
         pool = await asyncpg.create_pool(
             dsn=settings.db_dsn,
-            min_size=10,
-            max_size=25,
+            min_size=5,
+            max_size=10,
+            command_timeout=60,
             init=init_postgres_connection,
         )
         try:
