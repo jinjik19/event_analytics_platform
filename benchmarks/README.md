@@ -4,9 +4,9 @@ This directory contains detailed performance reports for each architectural stag
 
 ## Summary
 
-| Stage       | Architecture               | Max Throughput      | Latency (p99) | Status  | Report                                    |
-| ----------- | -------------------------- | ------------------- | ------------- | ------- | ----------------------------------------- |
-| **Stage 1** | Sync (FastAPI -> Postgres) | **~1,200 events/s** | 250ms         | ✅ Done | [View Report](./stage1_sync_ingestion.md) |
+| Stage       | Architecture               | Max Throughput    | Latency (p99) | Status  | Report                                    |
+| ----------- | -------------------------- | ----------------- | ------------- | ------- | ----------------------------------------- |
+| **Stage 1** | Sync (FastAPI -> Postgres) | **~913 events/s** | 260ms         | ✅ Done | [View Report](./stage1_sync_ingestion.md) |
 
 ## Methodology
 
