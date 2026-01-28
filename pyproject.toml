@@ -21,6 +21,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "faker>=40.1.2",
     "locust>=2.43.1",
     "mypy>=1.19.1",
     "pandas>=3.0.0",
@@ -83,6 +84,10 @@ convention = "google"
 ]
 "__init__.py" = [
     "F401", # Unused imports.
+]
+"scripts/*" = [
+    "S311", # Standard pseudo-random generators are fine for seeder
+    "ANN",  # Type annotations not required for scripts
 ]
 
 [tool.pytest.ini_options]

@@ -1,4 +1,4 @@
-.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop
 APP_ENV_TEST=test
 
 # Default target
@@ -27,6 +27,14 @@ restart: stop start
 
 logs-%:
 	docker-compose logs -f event_analytics_$*
+
+# Seeder
+seed-start:
+	docker-compose --profile seeder up -d seeder
+
+seed-stop:
+	docker-compose stop seeder
+	docker-compose rm -f seeder
 
 # Quality Assurance
 lint:

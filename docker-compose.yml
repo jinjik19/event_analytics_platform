@@ -68,6 +68,29 @@ services:
       --workers ${WEB_CONCURRENCY:-1}
       entrypoint.api.main:app
 
+  seeder:
+    container_name: event_analytics_seeder
+    build:
+      context: .
+      args:
+        INSTALL_DEV: "true"
+    restart: unless-stopped
+    profiles:
+      - seeder
+    depends_on:
+      api:
+        condition: service_started
+    env_file:
+      - .env
+    environment:
+      - API_HOST=http://api:8000
+      - SEEDER_SPEED=${SEEDER_SPEED:-1.0}
+      - SEEDER_USERS=${SEEDER_USERS:-5}
+    volumes:
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+    command: python /app/scripts/seeder.py
+
 volumes:
   event_analytics_db:
   event_queue:
