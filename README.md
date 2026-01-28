@@ -46,27 +46,30 @@ _Detailed architecture breakdown:_
 
 ## Roadmap & Progress
 
-[] Stage 1: Backend Foundation
+- [x] **Stage 1: Backend Foundation**
+  - [x] Clean Architecture, DI (Dishka), UoW.
+  - [x] High-performance Batch Ingestion (asyncpg + executemany).
+  - [x] Fail-safe validation strategy (Pydantic v2).
+  - [x] Structured Logging & Metrics preparation.
+  - [x] Load Testing benchmarks ([View Results](./benchmarks/stage1_sync_ingestion.md)).
 
-    [x] Clean Architecture, DI, UoW.
+- [ ] **Stage 2: Async Processing** (Current Focus)
+  - [ ] Decouple API from DB using Redis Streams.
+  - [ ] Background Workers implementation.
+  - [ ] At-least-once delivery guarantees.
 
-    [x] High-performance Batch Ingestion (asyncpg + executemany).
+- [ ] **Stage 3: CDC & OLAP**
+  - [ ] ClickHouse setup.
+  - [ ] Debezium & Kafka (CDC).
 
-    [x] Fail-safe validation strategy.
+- [ ] **Stage 4: Orchestration & Quality**
+  - [ ] Dagster & dbt.
 
-    [ ] Async Processing
+- [ ] **Stage 5: Production Deploy (VPS)**
 
-    [ ] Load Testing benchmarks (Locust).
+- [ ] **Stage 6: Kubernetes**
 
-[ ] Stage 2: CDC & OLAP
-
-[ ] Stage 3: Orchestration & Quality
-
-[ ] Stage 4: Production Deploy (VPS)
-
-[ ] Stage 5: Kubernetes
-
-[ ] Stage 6: Cloud Migration
+- [ ] **Stage 7: Cloud Migration (AWS/GCP)**
 
 ---
 
