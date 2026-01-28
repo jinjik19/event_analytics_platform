@@ -15,6 +15,9 @@ Verify that the monolithic architecture (Direct DB Insert) can handle **1,000 ev
 - **Users:** 1000 concurrent
 - **Wait Time:** 1-3 seconds (Human-like behavior)
 - **Plan Distribution:** 1 PRO (1k RPM), 5 ENTERPRISE (10k RPM)
+- **Batch Size:**
+  - Realistic: 5-15 events
+  - Stress: 200 events
 
 ## Results: Realistic Load
 
