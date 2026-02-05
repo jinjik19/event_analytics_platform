@@ -16,12 +16,12 @@ dependencies = [
     "redis>=7.1.0",
     "structlog>=25.5.0",
     "uuid6>=2025.0.1",
-    "valkey>=6.1.1",
 ]
 
 [dependency-groups]
 dev = [
     "faker>=40.1.2",
+    "fakeredis>=2.33.0",
     "locust>=2.43.1",
     "mypy>=1.19.1",
     "pandas>=3.0.0",
