@@ -2,23 +2,22 @@ from uuid import UUID
 
 from structlog import BoundLogger
 
-from application.common.uow import IUnitOfWork
 from application.event.schemas.ingest_dto import IngestEventBatchDTO
 from application.event.schemas.response_dto import IngestEventBatchResponseDTO
 from domain.event.models import Event
+from domain.event.producer import EventProducer
 from infrastructure.config.settings import Settings
 
 
 class IngestEventBatchService:
-    def __init__(self, uow: IUnitOfWork, logger: BoundLogger, settings: Settings) -> None:
-        self._uow = uow
+    def __init__(self, producer: EventProducer, logger: BoundLogger, settings: Settings) -> None:
+        self._producer = producer
         self._logger = logger
         self._settings = settings
 
     async def __call__(
         self, project_id: UUID, data: IngestEventBatchDTO
     ) -> IngestEventBatchResponseDTO:
-        self._logger.info("Ingesting event batch", events=len(data.events), project_id=project_id)
         new_events = [
             Event.create(
                 project_id=project_id,
@@ -31,9 +30,6 @@ class IngestEventBatchService:
             for dto in data.events
         ]
 
-        async with self._uow:
-            await self._uow.event.add_many(new_events)
-            await self._uow.commit()
+        await self._producer.publish_batch(new_events)
 
-        self._logger.info("Events ingested", events=len(new_events))
         return IngestEventBatchResponseDTO(event_ids=[event.event_id for event in new_events])

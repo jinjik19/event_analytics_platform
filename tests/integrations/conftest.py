@@ -1,5 +1,5 @@
 import subprocess
-from typing import AsyncGenerator, Generator
+from typing import AsyncGenerator, AsyncIterable, Generator
 from unittest.mock import patch
 
 import asyncpg
@@ -9,12 +9,18 @@ import pytest_asyncio
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
 from testcontainers.postgres import PostgresContainer
+from fakeredis import aioredis
 
+from domain.cache.repository import Cache
+from domain.event.producer import EventProducer
 from entrypoint.api.main import create_app
+from infrastructure.cache.redis import RedisCache
 from infrastructure.config.settings import Settings
 from infrastructure.database.postgres.init import init_postgres_connection
 from infrastructure.database.postgres.repositories.event import PostgresEventRepository
 from infrastructure.database.postgres.repositories.project import PostgresProjectRepository
+from infrastructure.di.providers.types import CacheRedis, StreamRedis
+from infrastructure.stream.redis_producer import RedisEventProducer
 
 
 ATLAS_REVISION_TABLE = "atlas_schema_revisions"
@@ -74,13 +80,43 @@ def apply_migrations(db_settings: Settings):
 
 
 @pytest_asyncio.fixture
-async def app(apply_migrations, db_settings: Settings) -> AsyncGenerator[FastAPI, None]:
+async def app(
+    apply_migrations,
+    db_settings: Settings,
+    fake_redis_client,
+    fake_stream_redis,
+) -> AsyncGenerator[FastAPI, None]:
     class TestSettingsProvider(Provider):
         @provide(scope=Scope.APP)
         def get_settings(self) -> Settings:
             return db_settings
 
-    with patch("entrypoint.api.main.SettingsProvider", return_value=TestSettingsProvider()):
+    class TestCacheProvider(Provider):
+        scope = Scope.APP
+
+        @provide
+        async def get_client(self) -> AsyncIterable[CacheRedis]:
+            yield fake_redis_client
+
+        @provide
+        def get_cache(self, client: CacheRedis) -> Cache:
+            return RedisCache(client)
+
+
+    class TestStreamProvider(Provider):
+        scope = Scope.APP
+
+        @provide
+        async def get_client(self) -> AsyncIterable[StreamRedis]:
+            yield fake_stream_redis
+
+        @provide
+        def get_producer(self, client: StreamRedis) -> EventProducer:
+            return RedisEventProducer(client)
+
+    with patch("entrypoint.api.main.SettingsProvider", return_value=TestSettingsProvider()), \
+        patch("entrypoint.api.main.CacheProvider", return_value=TestCacheProvider()), \
+        patch("entrypoint.api.main.StreamProvider", return_value=TestStreamProvider()):
         _app = create_app()
         yield _app
 
@@ -134,3 +170,27 @@ async def project_repository(db_conn):
 @pytest_asyncio.fixture
 async def event_repository(db_conn):
     return PostgresEventRepository(connection=db_conn)
+
+
+@pytest.fixture
+async def fake_redis_client():
+    client = aioredis.FakeRedis(decode_responses=True)
+    yield client
+    await client.aclose()
+
+
+@pytest.fixture
+def fake_redis_cache(fake_redis_client):
+    return RedisCache(redis=fake_redis_client)
+
+
+@pytest.fixture
+async def fake_stream_redis():
+    client = aioredis.FakeRedis(decode_responses=False)
+    yield client
+    await client.aclose()
+
+
+@pytest.fixture
+def event_producer(fake_stream_redis) -> EventProducer:
+    return RedisEventProducer(redis=fake_stream_redis)
