@@ -39,7 +39,8 @@ class Settings(BaseSettings):
     db_name: str = "database"
 
     # redis/valkey
-    valkey_url: str = "redis://localhost:6379/0"
+    cache_url: str = "redis://cache:6380/0"
+    stream_url: str = "redis://stream:6379/0"
 
     # Rate Limiting (requests per minute)
     rate_limit_enabled: bool = False
