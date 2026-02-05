@@ -14,8 +14,8 @@ from infrastructure.config.settings import AppEnv, settings
 from infrastructure.di.providers.api_key import ApiKeyProvider
 from infrastructure.di.providers.application import ApplicationProvider
 from infrastructure.di.providers.cache import CacheProvider
+from infrastructure.di.providers.db import DbProvider
 from infrastructure.di.providers.logger import LoggerProvider
-from infrastructure.di.providers.postgres import DbProvider
 from infrastructure.di.providers.rate_limit import RateLimitProvider
 from infrastructure.di.providers.security import SecurityProvider
 from infrastructure.di.providers.settings import SettingsProvider
