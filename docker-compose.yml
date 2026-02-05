@@ -29,13 +29,29 @@ services:
       db:
         condition: service_healthy
 
-  queue:
-    container_name: event_analytics_queue
+  cache:
+    container_name: event_analytics_cache
     image: valkey/valkey:8-bookworm
     restart: always
-    command: valkey-server --save 60 1 --loglevel notice
+    command: valkey-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save "" --appendonly no
     volumes:
-      - event_queue:/data
+      - event_cache:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  stream:
+    container_name: event_analytics_stream
+    image: valkey/valkey:8-bookworm
+    restart: always
+    command: valkey-server /etc/valkey/stream.conf
+    volumes:
+      - ./deploy/valkey/stream.conf:/etc/valkey/stream.conf
+      - ./valkey_data_stream:/data
     ports:
       - "6379:6379"
     healthcheck:
@@ -51,7 +67,9 @@ services:
     depends_on:
       migrator_db:
         condition: service_completed_successfully
-      queue:
+      cache:
+        condition: service_healthy
+      stream:
         condition: service_healthy
     env_file:
       - .env
@@ -93,4 +111,4 @@ services:
 
 volumes:
   event_analytics_db:
-  event_queue:
+  event_cache:

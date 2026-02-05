@@ -19,18 +19,18 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, Any]:
     """
     configure_logger()
 
-    redis_conn = aioredis.from_url(
-        url=str(settings.valkey_url),
+    cache_client = aioredis.from_url(
+        url=str(settings.cache_url),
         encoding="utf-8",
         decode_responses=True,
     )
 
     if settings.is_rate_limit_enabled:
-        await FastAPILimiter.init(redis_conn)
+        await FastAPILimiter.init(cache_client)
 
     yield
 
     if settings.is_rate_limit_enabled:
         await FastAPILimiter.close()
 
-    await redis_conn.close()
+    await cache_client.close()
