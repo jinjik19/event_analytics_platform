@@ -10,5 +10,7 @@ logs/
 tests/
 docker-compose.yaml
 README.md
-.redis_data/
-.valkey_data_stream/
+redis_data*/
+valkey_data*/
+*.rdb
+*.aof
