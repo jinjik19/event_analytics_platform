@@ -20,7 +20,7 @@ class CacheProvider(Provider):
             decode_responses=True,
         )
         yield CacheRedis(client)
-        await client.close()
+        await client.aclose()  # type: ignore[attr-defined]
 
     @provide
     def get_cache(self, client: CacheRedis) -> Cache:

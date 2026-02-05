@@ -151,16 +151,14 @@ class TestIngestEventBatchDTO:
             {"event_type": "purchase", "properties": {}},
         ]
 
-        batch = IngestEventBatchDTO(events=raw_events)
-
-        assert len(batch.events) == 0
+        with pytest.raises(ValidationError):
+            IngestEventBatchDTO(events=raw_events)
 
     def test_batch_with_empty_list(self):
         from application.event.schemas.ingest_dto import IngestEventBatchDTO
 
-        batch = IngestEventBatchDTO(events=[])
-
-        assert len(batch.events) == 0
+        with pytest.raises(ValidationError):
+             IngestEventBatchDTO(events=[])
 
     def test_batch_preserves_valid_purchase_events(self):
         from application.event.schemas.ingest_dto import IngestEventBatchDTO

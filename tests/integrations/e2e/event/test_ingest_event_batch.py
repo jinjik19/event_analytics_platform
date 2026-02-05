@@ -112,11 +112,7 @@ async def test_ingest_event_batch_empty_after_filtering(
         "/api/v1/event/batch", headers={"X-Api-Key": project.api_key}, json=body
     )
 
-    assert response.status_code == 202
-
-    data = response.json()
-    assert data["status"] == "accepted"
-    assert len(data["event_ids"]) == 0
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
@@ -256,7 +252,7 @@ async def test_ingest_event_batch_missing_api_key(
 
 @pytest.mark.asyncio
 async def test_ingest_event_batch_persists_events(
-    client: AsyncClient, project_repository, event_repository, make_project
+    client: AsyncClient, project_repository, make_project, fake_stream_redis
 ):
     project = make_project()
     await project_repository.add(project)
@@ -291,13 +287,8 @@ async def test_ingest_event_batch_persists_events(
     data = response.json()
     event_ids = data["event_ids"]
 
-    events = await event_repository.get_by_project_id(
-        project_id=project.project_id, limit=10, offset=0
-    )
-    assert len(events) == 2
-
-    persisted_ids = {str(e.event_id) for e in events}
-    assert set(event_ids) == persisted_ids
+    stream_len = await fake_stream_redis.xlen("events_stream")
+    assert stream_len == 2
 
 
 @pytest.mark.asyncio
@@ -313,11 +304,7 @@ async def test_ingest_event_batch_empty_list(
         "/api/v1/event/batch", headers={"X-Api-Key": project.api_key}, json=body
     )
 
-    assert response.status_code == 202
-
-    data = response.json()
-    assert data["status"] == "accepted"
-    assert len(data["event_ids"]) == 0
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio

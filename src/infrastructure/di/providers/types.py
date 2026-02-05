@@ -10,3 +10,4 @@ else:
 
 
 CacheRedis = NewType("CacheRedis", RedisClient)
+StreamRedis = NewType("StreamRedis", RedisClient)

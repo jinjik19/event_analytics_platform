@@ -21,6 +21,15 @@ def mock_uow():
 
     return uow
 
+
+@pytest.fixture
+def mock_producer():
+    producer = AsyncMock()
+    producer.publish = AsyncMock()
+    producer.publish_batch = AsyncMock()
+    return producer
+
+
 @pytest.fixture
 def mock_logger():
     logger = MagicMock(spec=BoundLogger)
