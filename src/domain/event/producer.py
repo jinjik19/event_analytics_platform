@@ -1,6 +1,6 @@
 from typing import Protocol
 
-from .models import Event
+from domain.event.models import Event
 
 
 class EventProducer(Protocol):
