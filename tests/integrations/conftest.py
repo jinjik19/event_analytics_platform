@@ -8,10 +8,12 @@ import pytest
 import pytest_asyncio
 from fastapi import FastAPI
 from httpx import AsyncClient, ASGITransport
+from structlog import get_logger
 from testcontainers.postgres import PostgresContainer
 from fakeredis import aioredis
 
 from domain.cache.repository import Cache
+from domain.event.consumer import EventConsumer
 from domain.event.producer import EventProducer
 from entrypoint.api.main import create_app
 from infrastructure.cache.redis import RedisCache
@@ -20,6 +22,7 @@ from infrastructure.database.postgres.init import init_postgres_connection
 from infrastructure.database.postgres.repositories.event import PostgresEventRepository
 from infrastructure.database.postgres.repositories.project import PostgresProjectRepository
 from infrastructure.di.providers.types import CacheRedis, StreamRedis
+from infrastructure.stream.redis_consumer import RedisEventConsumer
 from infrastructure.stream.redis_producer import RedisEventProducer
 
 
@@ -113,6 +116,15 @@ async def app(
         @provide
         def get_producer(self, client: StreamRedis) -> EventProducer:
             return RedisEventProducer(client)
+
+        @provide
+        def get_consumer(self, client: StreamRedis) -> EventConsumer:
+            return RedisEventConsumer(
+                redis=client,
+                logger=get_logger(),
+                group_name="test_group",
+                consumer_name="test_worker"
+            )
 
     with patch("entrypoint.api.main.SettingsProvider", return_value=TestSettingsProvider()), \
         patch("entrypoint.api.main.CacheProvider", return_value=TestCacheProvider()), \
