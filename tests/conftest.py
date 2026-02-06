@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
+from unittest.mock import MagicMock
 from uuid import UUID
 
 import pytest
+from structlog import BoundLogger
 
 from domain.event.models import Event, Properties
 from domain.event.types import EventType
@@ -19,6 +21,16 @@ def mock_settings() -> Settings:
     settings.app_env = AppEnv.TEST
     settings.secret_token = "test-secret-token-12345"
     return settings
+
+
+@pytest.fixture
+def mock_logger():
+    logger = MagicMock(spec=BoundLogger)
+    logger.info = MagicMock()
+    logger.error = MagicMock()
+    logger.debug = MagicMock()
+    logger.bind.return_value = logger
+    return logger
 
 
 @pytest.fixture
