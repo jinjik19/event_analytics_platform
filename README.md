@@ -13,11 +13,11 @@ Designed to handle real-time ingestion, processing, and visualization of user be
 
 ## Architecture
 
-![container](./docs/architecture/stage1/container.drawio.png)
+![container](./docs/architecture/container.drawio.png)
 
 _Detailed architecture breakdown:_
 
-- [Stage 1](./docs/architecture/stage1/)
+- [architecture](./docs/architecture/)
 
 ---
 
@@ -53,17 +53,17 @@ _Detailed architecture breakdown:_
   - [x] Structured Logging & Metrics preparation.
   - [x] Load Testing benchmarks ([View Results](./benchmarks/stage1_sync_ingestion.md)).
 
-- [ ] **Stage 2: Async Processing** (Current Focus)
-  - [ ] Decouple API from DB using Redis Streams.
+- [/] **Stage 2: Async Processing** (Current Focus)
+  - [x] Decouple API from DB using Redis Streams.
   - [ ] Background Workers implementation.
   - [ ] At-least-once delivery guarantees.
 
 - [ ] **Stage 3: CDC & OLAP**
   - [ ] ClickHouse setup.
   - [ ] Debezium & Kafka (CDC).
+  - [ ] Migration data from Postgre to Clickhouse
 
 - [ ] **Stage 4: Orchestration & Quality**
-  - [ ] Dagster & dbt.
 
 - [ ] **Stage 5: Production Deploy (VPS)**
 
@@ -107,7 +107,7 @@ curl http://localhost:8000/healthz
 
 4. Create/Run migration (optional, because migrations apply with docker containers up)
 
-Create migration.
+#### Create migration.
 
 1. Create sql file with your command in db/schema/postgres
 2. Run command
@@ -116,13 +116,35 @@ Create migration.
 atlas migrate diff some_name --env postgres
 ```
 
-Run migration
+#### Run migration
 
 ```bash
 atlas migrate apply --env postgres
 ```
 
 5. OpenAPI/Swagger - http://localhost:8000/docs#/
+
+---
+
+### Additional utils
+
+1. Seed
+
+#### Run seed
+
+```bash
+make seed-start
+```
+
+#### Stop seed
+
+```bash
+make seed-stop
+```
+
+2. Load Tests
+
+Information about load test [load_tests](./tests/load/README.md)
 
 ---
 

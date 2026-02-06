@@ -88,9 +88,9 @@ export PROJECT_NAME_PREFIX="load_test"
 
 ```bash
 # Local development
-uv run granian --interface asgi src/entrypoint/api/main:create_app --factory
+make start
 
-# Or docker-compose
+# OR
 docker-compose up -d
 ```
 

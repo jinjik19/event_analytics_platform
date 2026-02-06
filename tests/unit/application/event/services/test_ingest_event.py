@@ -9,9 +9,8 @@ from domain.event.types import EventType
 from domain.utils.generate_uuid import generate_uuid
 
 
-async def test_ingest_event_service(mock_uow, mock_logger, mock_settings):
-    mock_uow.event = AsyncMock()
-    service = IngestEventService(uow=mock_uow, logger=mock_logger, settings=mock_settings)
+async def test_ingest_event_service(mock_producer, mock_logger, mock_settings):
+    service = IngestEventService(producer=mock_producer, logger=mock_logger, settings=mock_settings)
     project_id = generate_uuid()
     dto = IngestEventDTO(
         user_id="42",
@@ -33,4 +32,4 @@ async def test_ingest_event_service(mock_uow, mock_logger, mock_settings):
     assert isinstance(result.event_id, UUID)
     assert result.status == "accepted"
 
-    assert mock_logger.info.called
+    mock_producer.publish.assert_called_once()

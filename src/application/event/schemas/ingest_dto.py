@@ -92,7 +92,7 @@ class IngestEventDTO(BaseModel):
 
 
 class IngestEventBatchDTO(BaseModel):
-    events: list[IngestEventDTO]
+    events: list[IngestEventDTO] = Field(..., min_length=1, max_length=500)
 
     @field_validator("events", mode="before")
     @classmethod

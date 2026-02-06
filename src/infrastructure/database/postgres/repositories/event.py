@@ -1,3 +1,4 @@
+import dataclasses
 from datetime import datetime
 from typing import Any, cast
 from uuid import UUID
@@ -6,7 +7,6 @@ from domain.event.models import Event, Properties
 from domain.exceptions.app import NotFoundError
 from domain.types import ProjectID
 from infrastructure.database.postgres.base import PostgresBaseRepository
-from infrastructure.serialization.object_to_dict import ObjectDictSerializer
 
 
 class PostgresEventRepository(PostgresBaseRepository):
@@ -33,7 +33,7 @@ class PostgresEventRepository(PostgresBaseRepository):
             event.session_id,
             event.event_type,
             event.timestamp,
-            ObjectDictSerializer.to_dict(event.properties),
+            dataclasses.asdict(event.properties),
             event.created_at,
         )
 
@@ -62,7 +62,7 @@ class PostgresEventRepository(PostgresBaseRepository):
                     event.session_id,
                     event.event_type,
                     event.timestamp,
-                    ObjectDictSerializer.to_dict(event.properties),
+                    dataclasses.asdict(event.properties),
                     event.created_at,
                 )
                 for event in events

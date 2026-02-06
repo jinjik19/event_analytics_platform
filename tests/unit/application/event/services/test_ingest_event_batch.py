@@ -13,10 +13,8 @@ from domain.utils.generate_uuid import generate_uuid
 
 class TestIngestEventBatchService:
     @pytest.fixture
-    def service(self, mock_uow, mock_logger, mock_settings):
-        mock_uow.event = AsyncMock()
-        mock_uow.event.add_many = AsyncMock()
-        return IngestEventBatchService(uow=mock_uow, logger=mock_logger, settings=mock_settings)
+    def service(self, mock_producer, mock_logger, mock_settings):
+        return IngestEventBatchService(producer=mock_producer, logger=mock_logger, settings=mock_settings)
 
     @pytest.fixture
     def project_id(self):
@@ -67,51 +65,24 @@ class TestIngestEventBatchService:
         assert all(isinstance(eid, UUID) for eid in result.event_ids)
 
     async def test_ingest_batch_calls_add_many(
-        self, service, mock_uow, project_id, sample_batch_dto
+        self, service, mock_producer, project_id, sample_batch_dto
     ):
         await service(project_id=project_id, data=sample_batch_dto)
 
-        mock_uow.event.add_many.assert_called_once()
-        events_arg = mock_uow.event.add_many.call_args[0][0]
+        mock_producer.publish_batch.assert_called_once()
+        events_arg = mock_producer.publish_batch.call_args[0][0]
         assert len(events_arg) == 2
 
-    async def test_ingest_batch_commits_transaction(
-        self, service, mock_uow, project_id, sample_batch_dto
-    ):
-        await service(project_id=project_id, data=sample_batch_dto)
-
-        mock_uow.commit.assert_called_once()
-
-    async def test_ingest_batch_logs_info(
-        self, service, mock_logger, project_id, sample_batch_dto
-    ):
-        await service(project_id=project_id, data=sample_batch_dto)
-
-        assert mock_logger.info.call_count == 2
-        first_call_kwargs = mock_logger.info.call_args_list[0][1]
-        assert first_call_kwargs["events"] == 2
-        assert first_call_kwargs["project_id"] == project_id
-
     async def test_ingest_batch_creates_events_with_correct_project_id(
-        self, service, mock_uow, project_id, sample_batch_dto
+        self, service, mock_producer, project_id, sample_batch_dto
     ):
         await service(project_id=project_id, data=sample_batch_dto)
 
-        events_arg = mock_uow.event.add_many.call_args[0][0]
+        events_arg = mock_producer.publish_batch.call_args[0][0]
         assert all(event.project_id == project_id for event in events_arg)
 
-    async def test_ingest_batch_with_empty_events(
-        self, service, mock_uow, project_id
-    ):
-        empty_batch = IngestEventBatchDTO(events=[])
-
-        result = await service(project_id=project_id, data=empty_batch)
-
-        assert len(result.event_ids) == 0
-        mock_uow.event.add_many.assert_called_once_with([])
-
     async def test_ingest_batch_preserves_event_data(
-        self, service, mock_uow, project_id
+        self, service, mock_producer, project_id
     ):
         batch_dto = IngestEventBatchDTO(
             events=[
@@ -132,7 +103,7 @@ class TestIngestEventBatchService:
 
         await service(project_id=project_id, data=batch_dto)
 
-        events_arg = mock_uow.event.add_many.call_args[0][0]
+        events_arg = mock_producer.publish_batch.call_args[0][0]
         event = events_arg[0]
         assert event.user_id == "specific_user"
         assert event.session_id == "specific_session"
@@ -157,7 +128,7 @@ class TestIngestEventBatchService:
 
         assert len(result.event_ids) == 1
 
-    async def test_ingest_batch_large_batch(self, service, mock_uow, project_id):
+    async def test_ingest_batch_large_batch(self, service, mock_producer, project_id):
         events = [
             IngestEventDTO(
                 user_id=f"user_{i}",
@@ -172,5 +143,5 @@ class TestIngestEventBatchService:
         result = await service(project_id=project_id, data=large_batch)
 
         assert len(result.event_ids) == 100
-        events_arg = mock_uow.event.add_many.call_args[0][0]
+        events_arg = mock_producer.publish_batch.call_args[0][0]
         assert len(events_arg) == 100
