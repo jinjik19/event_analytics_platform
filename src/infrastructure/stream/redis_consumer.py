@@ -7,6 +7,7 @@ from structlog import BoundLogger
 from domain.event.consumer import ConsumedEvent
 from infrastructure.di.providers.types import StreamRedis
 from infrastructure.stream.mapper import dict_to_event
+from infrastructure.utils.retries import db_retry_policy
 
 
 class RedisEventConsumer:
@@ -29,6 +30,7 @@ class RedisEventConsumer:
             consumer=consumer_name,
         )
 
+    @db_retry_policy
     async def ensure_group(self) -> None:
         try:
             # '0' mean "read from the beginning of the stream".
@@ -43,6 +45,7 @@ class RedisEventConsumer:
             else:
                 raise e
 
+    @db_retry_policy
     async def read_batch(self, count: int = 100, block_ms: int = 1000) -> list[ConsumedEvent]:
         raw_messages = await self._fetch_messages(count=count, block_ms=block_ms)
 
@@ -57,6 +60,7 @@ class RedisEventConsumer:
 
         return result
 
+    @db_retry_policy
     async def ack(self, msg_ids: list[str]) -> None:
         if not msg_ids:
             return

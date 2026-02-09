@@ -85,6 +85,24 @@ services:
       --reload
       --workers ${WEB_CONCURRENCY:-1}
       entrypoint.api.main:app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    container_name: event_analytics_worker
+    build: .
+    command: python -m src.entrypoint.worker.main
+    depends_on:
+      stream:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: always
 
   seeder:
     container_name: event_analytics_seeder

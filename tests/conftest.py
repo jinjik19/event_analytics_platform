@@ -20,6 +20,8 @@ pytest_plugins = ("pytest_asyncio",)
 def mock_settings() -> Settings:
     settings.app_env = AppEnv.TEST
     settings.secret_token = "test-secret-token-12345"
+    settings.batch_size = 10
+    settings.read_timeout_ms = 1000
     return settings
 
 

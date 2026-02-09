@@ -7,6 +7,7 @@ import msgpack  # type: ignore[import-untyped]
 
 from domain.event.models import Event
 from infrastructure.di.providers.types import StreamRedis
+from infrastructure.utils.retries import db_retry_policy
 
 
 def msgpack_encoder(obj: Any) -> Any:  # noqa: ANN401
@@ -25,6 +26,7 @@ class RedisEventProducer:
         self._stream_name = stream_name
         self._max_len = max_len
 
+    @db_retry_policy
     async def publish(self, event: Event) -> None:
         event_dict = dataclasses.asdict(event)
         payload = msgpack.packb(event_dict, default=msgpack_encoder, use_bin_type=True)
@@ -36,6 +38,7 @@ class RedisEventProducer:
             approximate=True,
         )
 
+    @db_retry_policy
     async def publish_batch(self, events: list[Event]) -> None:
         async with self._redis.pipeline() as pipe:
             for event in events:
