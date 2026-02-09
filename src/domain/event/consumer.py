@@ -15,7 +15,7 @@ class EventConsumer(Protocol):
         """Create the consumer group if it doesn't exist."""
         ...
 
-    async def read_batch(self, batch_size: int = 100) -> list[ConsumedEvent]:
+    async def read_batch(self, count: int = 100, block_ms: int = 1000) -> list[ConsumedEvent]:
         """Read a batch of events from the stream."""
         ...
 

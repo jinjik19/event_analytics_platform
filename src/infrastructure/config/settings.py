@@ -50,6 +50,10 @@ class Settings(BaseSettings):
     rate_limit_no_auth_rpm: int = 10  # fallback without API key
     rate_limit_project_create_rpm: int = 5
 
+    # Worker settings
+    batch_size: int = 100
+    read_timeout_ms: int = 1000
+
     # Security
     secret_token: str = ""
 
