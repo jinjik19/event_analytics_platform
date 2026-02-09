@@ -2,6 +2,7 @@ import pytest
 from dishka import make_async_container, Provider, Scope, provide
 from unittest.mock import MagicMock, AsyncMock
 
+from application.common.uow import IUnitOfWork
 from application.worker.batch_processor import BatchProcessor
 from application.worker.graceful_killer import GracefulKiller
 from application.worker.loop import WorkerLoop
@@ -25,6 +26,10 @@ class MockDependenciesProvider(Provider):
     @provide
     def get_consumer(self) -> EventConsumer:
         return AsyncMock(spec=EventConsumer)
+
+    @provide
+    def get_uow(self) -> IUnitOfWork:
+        return AsyncMock(spec=IUnitOfWork)
 
 
 @pytest.mark.asyncio

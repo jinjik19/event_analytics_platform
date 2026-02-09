@@ -1,6 +1,7 @@
 from dishka import Provider, Scope, provide
 from structlog import BoundLogger
 
+from application.common.uow import IUnitOfWork
 from application.worker.batch_processor import BatchProcessor
 from application.worker.graceful_killer import GracefulKiller
 from application.worker.loop import WorkerLoop
@@ -19,10 +20,11 @@ class WorkerProvider(Provider):
     def get_processor(
         self,
         consumer: EventConsumer,
+        uow: IUnitOfWork,
         logger: BoundLogger,
         settings: Settings,
     ) -> BatchProcessor:
-        return BatchProcessor(consumer, logger, settings)
+        return BatchProcessor(consumer, uow, logger, settings)
 
     @provide(scope=Scope.REQUEST)
     def get_loop(

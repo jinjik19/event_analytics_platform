@@ -6,6 +6,7 @@ from structlog import get_logger
 
 from application.worker.graceful_killer import GracefulKiller
 from application.worker.loop import WorkerLoop
+from infrastructure.di.providers.db import DbProvider
 from infrastructure.di.providers.logger import LoggerProvider
 from infrastructure.di.providers.settings import SettingsProvider
 from infrastructure.di.providers.stream import StreamProvider
@@ -21,6 +22,7 @@ async def main() -> None:
         LoggerProvider(),
         StreamProvider(),
         WorkerProvider(),
+        DbProvider(),
     )
 
     try:

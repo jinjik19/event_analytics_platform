@@ -13,9 +13,10 @@ def mock_consumer():
 
 
 @pytest.fixture
-def processor(mock_consumer, mock_logger, mock_settings):
+def processor(mock_consumer, mock_uow, mock_logger, mock_settings):
     return BatchProcessor(
         consumer=mock_consumer,
+        uow=mock_uow,
         logger=mock_logger,
         settings=mock_settings
     )

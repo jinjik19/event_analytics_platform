@@ -7,9 +7,11 @@ from domain.event.models import Event, Properties
 from domain.exceptions.app import NotFoundError
 from domain.types import ProjectID
 from infrastructure.database.postgres.base import PostgresBaseRepository
+from infrastructure.utils.retries import db_retry_policy
 
 
 class PostgresEventRepository(PostgresBaseRepository):
+    @db_retry_policy
     async def add(self, event: Event) -> None:
         await self.execute(
             """
@@ -37,6 +39,7 @@ class PostgresEventRepository(PostgresBaseRepository):
             event.created_at,
         )
 
+    @db_retry_policy
     async def add_many(self, events: list[Event]) -> None:
         await self.executemany(
             """
