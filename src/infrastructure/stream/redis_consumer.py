@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import Any, cast
 
 import msgpack  # type: ignore[import-untyped]
@@ -18,11 +19,13 @@ class RedisEventConsumer:
         group_name: str,
         consumer_name: str,
         stream_name: str = "events_stream",
+        dlq_stream_name: str = "events_dlq",
     ) -> None:
         self._redis = redis
         self._group_name = group_name
         self._consumer_name = consumer_name
         self._stream_name = stream_name
+        self._dlq_stream_name = dlq_stream_name
 
         self._logger = logger.bind(
             component="redis_event_consumer",
@@ -54,7 +57,7 @@ class RedisEventConsumer:
 
         result = []
         for msg_id_bytes, fields in raw_messages:
-            consumed_events = self._process_message(msg_id_bytes, fields)
+            consumed_events = await self._process_message(msg_id_bytes, fields)
             if consumed_events:
                 result.append(consumed_events)
 
@@ -66,6 +69,24 @@ class RedisEventConsumer:
             return
         await self._redis.xack(self._stream_name, self._group_name, *msg_ids)  # type: ignore[no-untyped-call]
         self._logger.debug("events_acked", count=len(msg_ids))
+
+    async def send_to_dlq(self, msg_id: str, raw_data: bytes, error: str) -> None:
+        payload = {
+            "original_msg_id": msg_id,
+            "error": error,
+            "failed_at": datetime.now(UTC).isoformat(),
+            "raw_data": raw_data,
+        }
+
+        packed_payload = msgpack.packb(payload)
+
+        await self._redis.xadd(
+            name=self._dlq_stream_name,
+            fields={"data": packed_payload},
+        )
+
+        self._logger.warning("message_sent_to_dlq", msg_id=msg_id, error=error)
+        await self.ack([msg_id])
 
     async def _fetch_messages(self, count: int, block_ms: int) -> list[Any]:
         # XREADGROUP return nested structure
@@ -82,7 +103,7 @@ class RedisEventConsumer:
 
         return cast(list[Any], response[0][1])
 
-    def _process_message(
+    async def _process_message(
         self, msg_id_bytes: bytes, fields: dict[bytes, bytes]
     ) -> ConsumedEvent | None:
         msg_id = msg_id_bytes.decode("utf-8") if isinstance(msg_id_bytes, bytes) else msg_id_bytes
@@ -97,7 +118,8 @@ class RedisEventConsumer:
             event = dict_to_event(data_dict)
             return ConsumedEvent(msg_id=msg_id, event=event)
         except Exception as e:
-            # Log and skip malformed message
-            # But in future needs to send it to dead-letter queue
-            self._logger.error("malformed_message", msg_id=msg_id, error=str(e))
+            self._logger.error("deserialization_failed", msg_id=msg_id, error=str(e))
+
+            await self.send_to_dlq(msg_id, raw_data, error=f"DeserializationError: {e!s}")
+
             return None
