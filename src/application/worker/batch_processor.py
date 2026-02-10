@@ -27,17 +27,17 @@ class BatchProcessor:
         self._logger.info("batch_received", count=len(events))
 
         domain_events = [consumed.event for consumed in events]
+        msg_ids = [e.msg_id for e in events]
 
         try:
             async with self._uow:
                 await self._uow.event.add_many(domain_events)
                 await self._uow.commit()
-        except Exception as e:
-            self._logger.error("db_save_failed", error=str(e))
-            raise e
 
-        msg_ids = [event.msg_id for event in events]
-        await self._consumer.ack(msg_ids)
+            await self._consumer.ack(msg_ids)
+        except Exception as e:
+            self._logger.error("batch_processing_failed", error=str(e))
+            raise e
 
         self._logger.info("batch_processed_and_acked", count=len(msg_ids))
 

@@ -22,3 +22,7 @@ class EventConsumer(Protocol):
     async def ack(self, msg_ids: list[str]) -> None:
         """Acknowledge the processing of events by their message IDs."""
         ...
+
+    async def send_to_dlq(self, msg_id: str, raw_data: bytes, error: str) -> None:
+        """Move 'bad' message to Dead Letter Queue."""
+        ...

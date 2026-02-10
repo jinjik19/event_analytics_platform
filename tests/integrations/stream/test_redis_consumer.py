@@ -1,4 +1,5 @@
 import pytest
+import msgpack
 from uuid import UUID
 from datetime import datetime, UTC
 
@@ -66,7 +67,6 @@ async def test_consume_event_success(fake_stream_redis, sample_event, mock_logge
     assert pending_info['pending'] == 0
 
 
-@pytest.mark.asyncio
 async def test_ensure_group_idempotency(fake_stream_redis, mock_logger):
     consumer = RedisEventConsumer(fake_stream_redis, mock_logger, "group1", "worker1", "s1")
     # Create group for the first time
@@ -78,3 +78,41 @@ async def test_ensure_group_idempotency(fake_stream_redis, mock_logger):
     groups = await fake_stream_redis.xinfo_groups("s1")
     assert len(groups) == 1
     assert groups[0]['name'] == b"group1"
+
+
+async def test_consume_malformed_message_sends_to_dlq(fake_stream_redis, mock_logger):
+    stream_name = "test_events"
+    dlq_name = "test_events_dlq"
+    group_name = "test_group"
+
+    consumer = RedisEventConsumer(
+        redis=fake_stream_redis,
+        logger=mock_logger,
+        group_name=group_name,
+        consumer_name="worker_1",
+        stream_name=stream_name,
+        dlq_stream_name=dlq_name
+    )
+    await consumer.ensure_group()
+
+
+    malformed_data = b"not_a_msgpack_structure"
+    await fake_stream_redis.xadd(stream_name, {"data": malformed_data})
+
+    consumed_batch = await consumer.read_batch(count=1)
+    assert len(consumed_batch) == 0
+
+    pending_info = await fake_stream_redis.xpending(stream_name, group_name)
+    assert pending_info['pending'] == 0
+
+    dlq_len = await fake_stream_redis.xlen(dlq_name)
+    assert dlq_len == 1
+
+    dlq_messages = await fake_stream_redis.xrange(dlq_name)
+    _, fields = dlq_messages[0]
+
+    dlq_payload = msgpack.unpackb(fields[b"data"], raw=False)
+
+    assert dlq_payload["raw_data"] == malformed_data
+    assert "DeserializationError" in dlq_payload["error"]
+    assert "failed_at" in dlq_payload

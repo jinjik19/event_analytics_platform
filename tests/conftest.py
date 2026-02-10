@@ -31,6 +31,7 @@ def mock_logger():
     logger.info = MagicMock()
     logger.error = MagicMock()
     logger.debug = MagicMock()
+    logger.warning = MagicMock()
     logger.bind.return_value = logger
     return logger
 
