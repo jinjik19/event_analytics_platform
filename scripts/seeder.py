@@ -108,7 +108,7 @@ class EventSeeder:
         """Wait for API to become available."""
         for i in range(max_retries):
             try:
-                resp = await self.client.get("/healthz")
+                resp = await self.client.get("/health")
                 if resp.status_code == 200:
                     logger.info("api_ready", host=API_HOST)
                     return

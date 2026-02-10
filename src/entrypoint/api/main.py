@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from entrypoint.api.lifespan import lifespan
 from entrypoint.api.middleware.exception_handler import ExceptionHandlerMiddleware
 from entrypoint.api.middleware.logger import StructlogMiddleware
-from entrypoint.api.routers import healthz
+from entrypoint.api.routers import health
 from entrypoint.api.routers.v1.ingestion import event, project
 from infrastructure.config.settings import AppEnv, settings
 from infrastructure.di.providers.api_key import ApiKeyProvider
@@ -74,7 +74,7 @@ def create_app() -> FastAPI:
     v1.include_router(event.router)
 
     app.include_router(v1)
-    app.include_router(healthz.router)
+    app.include_router(health.router)
 
     return app
 

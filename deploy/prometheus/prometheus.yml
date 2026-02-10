@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 5s # How often catch metrics
+  evaluation_interval: 5s # How often calculate alert rules
+
+scrape_configs:
+  # Api metrics
+  - job_name: "event_analytics_api"
+    metrics_path: "/metrics" # Standart path prometheus-fastapi-instrumentator
+    static_configs:
+      - targets: ["api:8000"]
+
+  # Worker metrics
+  - job_name: "event_analytics_worker"
+    metrics_path: "/"
+    static_configs:
+      - targets: ["worker:8001"]
