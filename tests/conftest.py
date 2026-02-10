@@ -22,6 +22,7 @@ def mock_settings() -> Settings:
     settings.secret_token = "test-secret-token-12345"
     settings.batch_size = 10
     settings.read_timeout_ms = 1000
+    settings.metrics_update_interval = 0.1
     return settings
 
 

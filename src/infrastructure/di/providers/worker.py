@@ -32,5 +32,6 @@ class WorkerProvider(Provider):
         processor: BatchProcessor,
         killer: GracefulKiller,
         logger: BoundLogger,
+        settings: Settings,
     ) -> WorkerLoop:
-        return WorkerLoop(processor, killer, logger)
+        return WorkerLoop(processor, killer, logger, settings)

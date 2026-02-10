@@ -7,6 +7,11 @@ from structlog import BoundLogger
 
 from domain.event.consumer import ConsumedEvent
 from infrastructure.di.providers.types import StreamRedis
+from infrastructure.metrics.worker import (
+    CONSUMER_LAG,
+    DLQ_SIZE,
+    PROCESSING_ERRORS,
+)
 from infrastructure.stream.mapper import dict_to_event
 from infrastructure.utils.retries import db_retry_policy
 
@@ -32,6 +37,24 @@ class RedisEventConsumer:
             group=group_name,
             consumer=consumer_name,
         )
+
+    async def update_stream_metrics(self) -> None:
+        try:
+            # Lag
+            groups_info = await self._redis.xinfo_groups(self._stream_name)  # type: ignore[no-untyped-call]
+            for group in groups_info:
+                if group["name"] == self._group_name.encode():
+                    lag = group.get("lag")
+                    if lag is not None:
+                        CONSUMER_LAG.set(lag)
+                    break
+
+            # DLQ
+            dlq_len = await self._redis.xlen(self._dlq_stream_name)
+            DLQ_SIZE.set(dlq_len)
+
+        except Exception as e:
+            self._logger.warning("metrics_update_failed", error=str(e))
 
     @db_retry_policy
     async def ensure_group(self) -> None:
@@ -119,6 +142,8 @@ class RedisEventConsumer:
             return ConsumedEvent(msg_id=msg_id, event=event)
         except Exception as e:
             self._logger.error("deserialization_failed", msg_id=msg_id, error=str(e))
+
+            PROCESSING_ERRORS.labels(error_type="deserialization").inc()
 
             await self.send_to_dlq(msg_id, raw_data, error=f"DeserializationError: {e!s}")
 
