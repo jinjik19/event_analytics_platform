@@ -86,7 +86,7 @@ services:
       --workers ${WEB_CONCURRENCY:-1}
       entrypoint.api.main:app
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -103,6 +103,37 @@ services:
     env_file:
       - .env
     restart: always
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "8001:8001"
+
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: event_analytics_prometheus
+    restart: always
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: event_analytics_grafana
+    restart: always
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
 
   seeder:
     container_name: event_analytics_seeder
@@ -130,3 +161,5 @@ services:
 volumes:
   event_analytics_db:
   event_cache:
+  prometheus_data:
+  grafana_data:

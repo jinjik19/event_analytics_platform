@@ -2,13 +2,14 @@ from dishka import make_async_container
 from dishka.integrations.fastapi import FastapiProvider, setup_dishka
 from fastapi import APIRouter, FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
+from prometheus_fastapi_instrumentator import Instrumentator
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.cors import CORSMiddleware
 
 from entrypoint.api.lifespan import lifespan
 from entrypoint.api.middleware.exception_handler import ExceptionHandlerMiddleware
 from entrypoint.api.middleware.logger import StructlogMiddleware
-from entrypoint.api.routers import healthz
+from entrypoint.api.routers import health
 from entrypoint.api.routers.v1.ingestion import event, project
 from infrastructure.config.settings import AppEnv, settings
 from infrastructure.di.providers.api_key import ApiKeyProvider
@@ -30,6 +31,8 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="Event Analytics Platform",
         lifespan=lifespan,
+        docs_url="/docs",
+        openapi_url="/docs/openapi.json",
         exception_handlers={},
     )
 
@@ -51,13 +54,6 @@ def create_app() -> FastAPI:
     app.add_exception_handler(RequestValidationError, re_raise_exception)
     app.add_exception_handler(StarletteHTTPException, re_raise_exception)
 
-    v1 = APIRouter(prefix="/api/v1")
-    v1.include_router(project.router)
-    v1.include_router(event.router)
-
-    app.include_router(v1)
-    app.include_router(healthz.router)
-
     container = make_async_container(
         DbProvider(),
         ApplicationProvider(),
@@ -71,6 +67,14 @@ def create_app() -> FastAPI:
         StreamProvider(),
     )
     setup_dishka(container, app)
+    Instrumentator().instrument(app).expose(app)
+
+    v1 = APIRouter(prefix="/api/v1")
+    v1.include_router(project.router)
+    v1.include_router(event.router)
+
+    app.include_router(v1)
+    app.include_router(health.router)
 
     return app
 

@@ -53,6 +53,7 @@ class Settings(BaseSettings):
     # Worker settings
     batch_size: int = 100
     read_timeout_ms: int = 1000
+    metrics_update_interval: int = 15
 
     # Security
     secret_token: str = ""

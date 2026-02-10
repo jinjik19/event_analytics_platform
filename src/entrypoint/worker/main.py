@@ -11,12 +11,14 @@ from infrastructure.di.providers.logger import LoggerProvider
 from infrastructure.di.providers.settings import SettingsProvider
 from infrastructure.di.providers.stream import StreamProvider
 from infrastructure.di.providers.worker import WorkerProvider
+from infrastructure.metrics.worker import start_metrics_server
 
 
 logger = get_logger()
 
 
 async def main() -> None:
+    start_metrics_server(8001)
     container = make_async_container(
         SettingsProvider(),
         LoggerProvider(),

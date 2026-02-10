@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 from unittest.mock import ANY, AsyncMock, MagicMock, patch
 import pytest
 
@@ -9,6 +10,7 @@ def mock_processor():
     processor = AsyncMock()
     processor.ensure_startup = AsyncMock()
     processor.process = AsyncMock()
+    processor.update_metrics = AsyncMock()
     return processor
 
 
@@ -20,11 +22,12 @@ def mock_killer():
 
 
 @pytest.fixture
-def worker_loop(mock_processor, mock_killer, mock_logger):
+def worker_loop(mock_processor, mock_killer, mock_logger, mock_settings):
     return WorkerLoop(
         processor=mock_processor,
         killer=mock_killer,
-        logger=mock_logger
+        logger=mock_logger,
+        settings=mock_settings,
     )
 
 
@@ -48,7 +51,7 @@ async def test_loop_handles_exception(worker_loop, mock_processor, mock_killer, 
     mock_logger.error.assert_called_once()
     assert "worker_unexpected_error" in mock_logger.error.call_args[0]
 
-@pytest.mark.asyncio
+
 async def test_loop_handles_cancellation(worker_loop, mock_processor, mock_killer, mock_logger):
     mock_killer.shutdown_event.is_set.side_effect = [False]
     mock_processor.process.side_effect = asyncio.CancelledError()
@@ -58,3 +61,28 @@ async def test_loop_handles_cancellation(worker_loop, mock_processor, mock_kille
         mock_sleep.assert_not_called()
 
     mock_logger.error.assert_any_call("worker_task_cancelled", error=ANY)
+
+
+async def test_monitoring_loop_starts_and_stops(worker_loop, mock_killer):
+    mock_killer.shutdown_event.is_set.side_effect = [False, True]
+
+    await worker_loop.run()
+
+    assert worker_loop._metrics_task is not None
+    assert worker_loop._metrics_task.cancelled()
+
+
+async def test_monitoring_loop_calls_update(worker_loop, mock_processor):
+    """
+    Проверяем внутренности _monitoring_loop изолированно.
+    """
+
+    task = asyncio.create_task(worker_loop._monitoring_loop())
+
+    await asyncio.sleep(0.05)
+
+    task.cancel()
+    with contextlib.suppress(asyncio.CancelledError):
+        await task
+
+    assert mock_processor.update_metrics.call_count >= 1

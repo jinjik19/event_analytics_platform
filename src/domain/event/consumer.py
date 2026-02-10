@@ -26,3 +26,6 @@ class EventConsumer(Protocol):
     async def send_to_dlq(self, msg_id: str, raw_data: bytes, error: str) -> None:
         """Move 'bad' message to Dead Letter Queue."""
         ...
+
+    async def update_stream_metrics(self) -> None:
+        """Update metrics (Lag, DLQ)"""

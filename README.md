@@ -13,9 +13,43 @@ Designed to handle real-time ingestion, processing, and visualization of user be
 
 ## Architecture
 
-![container](./docs/architecture/container.drawio.png)
+```mermaid
+flowchart LR
+    %% Styles
+    classDef storage fill:#3f51b5,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef service fill:#2d3436,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef monitor fill:#00b894,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef dead fill:#d63031,stroke:#333,stroke-width:2px,color:#fff;
 
-_Detailed architecture breakdown:_
+    %% Input
+    User((User / Seeder)) -->|HTTP POST| API[API Gateway]:::service
+
+    %% Main Data Flow
+    subgraph "Data Pipeline"
+        API -->|1. Ingest| Stream[(Redis Stream)]:::storage
+        Stream -->|2. Read Group| Worker[Worker Service]:::service
+        Worker -->|3. Write Batch| DB[(PostgreSQL)]:::storage
+    end
+
+    %% Error Handling
+    Worker -.->|4. Error DLQ| DLQ[(Events DLQ Stream)]:::dead
+
+    %% Observability
+    subgraph "Observability Stack"
+        Prometheus[Prometheus]:::monitor
+        Grafana[Grafana]:::monitor
+
+        Prometheus -->|Query| Grafana
+    end
+
+    %% Metrics Scraping
+    API -.->|/metrics| Prometheus
+    Worker -.->|/metrics| Prometheus
+
+    %% Link Styling
+    linkStyle 4 stroke:#d63031,stroke-width:2px,stroke-dasharray: 5 5;
+    linkStyle 6,7 stroke:#00b894,stroke-width:2px,stroke-dasharray: 5 5;
+```
 
 - [architecture](./docs/architecture/)
 
@@ -55,8 +89,9 @@ _Detailed architecture breakdown:_
 
 - [/] **Stage 2: Async Processing** (Current Focus)
   - [x] Decouple API from DB using Redis Streams.
-  - [ ] Background Workers implementation.
-  - [ ] At-least-once delivery guarantees.
+  - [x] Background Workers implementation.
+  - [x] At-least-once delivery guarantees.
+  - [ ] Load Testing benchmarks ([View Results]()).
 
 - [ ] **Stage 3: CDC & OLAP**
   - [ ] ClickHouse setup.
@@ -101,9 +136,12 @@ docker-compose up -d --build
 3. Check Health
 
 ```bash
-curl http://localhost:8000/healthz
+curl http://localhost:8000/health
 # Output: {"status": "ok"}
 ```
+
+Prometheus Targets - http://localhost:9090/targets
+Grafana - http://localhost:3000
 
 4. Create/Run migration (optional, because migrations apply with docker containers up)
 
