@@ -151,6 +151,7 @@ uv run locust -f tests/load/locustfile.py \
     -r 5 \
     -t 5m \
     --csv=tests/load/results/benchmark_stage \
+    --html=tests/load/results/benchmark_report.html \
     MixedLoadUser
 ```
 
@@ -165,6 +166,7 @@ uv run locust -f tests/load/locustfile.py \
     -r 5 \
     -t 3m \
     --csv=tests/load/results/stress_limit \
+    --html=tests/load/results/stress_limit.html
     StressBatchUser
 ```
 
