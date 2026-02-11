@@ -128,6 +128,20 @@ Verify that decoupling the API from the Database using **Redis Streams** elimina
     - Once the load stopped, the Worker processed the backlog in ~60 seconds (Recovery Phase).
 3.  **Performance Trade-off:** I achieved **~13k stable events/sec** vs Stage 1's "fake" 19k events/sec (which had 40s+ latency).
 
+### Result with 3 api workers
+
+#### Grafana: Worker Health
+
+![grafana_worker](./assets/stage2/3_api_workers/grafana_worker_health.png)
+
+#### Request and Response Statistics
+
+![request_statistics](./assets/stage2/3_api_workers/reques_and_response_stats.png)
+
+#### Charts
+
+![chart](./assets/stage2/3_api_workers/chart.jpg)
+
 ---
 
 ## ✅ Conclusion
