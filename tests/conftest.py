@@ -1,7 +1,9 @@
 from datetime import UTC, datetime
+from unittest.mock import MagicMock
 from uuid import UUID
 
 import pytest
+from structlog import BoundLogger
 
 from domain.event.models import Event, Properties
 from domain.event.types import EventType
@@ -18,7 +20,21 @@ pytest_plugins = ("pytest_asyncio",)
 def mock_settings() -> Settings:
     settings.app_env = AppEnv.TEST
     settings.secret_token = "test-secret-token-12345"
+    settings.batch_size = 10
+    settings.read_timeout_ms = 1000
+    settings.metrics_update_interval = 0.1
     return settings
+
+
+@pytest.fixture
+def mock_logger():
+    logger = MagicMock(spec=BoundLogger)
+    logger.info = MagicMock()
+    logger.error = MagicMock()
+    logger.debug = MagicMock()
+    logger.warning = MagicMock()
+    logger.bind.return_value = logger
+    return logger
 
 
 @pytest.fixture

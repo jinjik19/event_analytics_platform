@@ -29,13 +29,29 @@ services:
       db:
         condition: service_healthy
 
-  queue:
-    container_name: event_analytics_queue
+  cache:
+    container_name: event_analytics_cache
     image: valkey/valkey:8-bookworm
     restart: always
-    command: valkey-server --save 60 1 --loglevel notice
+    command: valkey-server --maxmemory 256mb --maxmemory-policy allkeys-lru --save "" --appendonly no
     volumes:
-      - event_queue:/data
+      - event_cache:/data
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  stream:
+    container_name: event_analytics_stream
+    image: valkey/valkey:8-bookworm
+    restart: always
+    command: valkey-server /etc/valkey/stream.conf
+    volumes:
+      - ./deploy/valkey/stream.conf:/etc/valkey/stream.conf
+      - ./valkey_data_stream:/data
     ports:
       - "6379:6379"
     healthcheck:
@@ -51,7 +67,9 @@ services:
     depends_on:
       migrator_db:
         condition: service_completed_successfully
-      queue:
+      cache:
+        condition: service_healthy
+      stream:
         condition: service_healthy
     env_file:
       - .env
@@ -67,6 +85,55 @@ services:
       --reload
       --workers ${WEB_CONCURRENCY:-1}
       entrypoint.api.main:app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    container_name: event_analytics_worker
+    build: .
+    command: python -m src.entrypoint.worker.main
+    depends_on:
+      stream:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - ./src:/app/src
+    ports:
+      - "8001:8001"
+
+  prometheus:
+    image: prom/prometheus:v2.50.0
+    container_name: event_analytics_prometheus
+    restart: always
+    volumes:
+      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=15d"
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana:10.3.3
+    container_name: event_analytics_grafana
+    restart: always
+    depends_on:
+      - prometheus
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
 
   seeder:
     container_name: event_analytics_seeder
@@ -93,4 +160,6 @@ services:
 
 volumes:
   event_analytics_db:
-  event_queue:
+  event_cache:
+  prometheus_data:
+  grafana_data:

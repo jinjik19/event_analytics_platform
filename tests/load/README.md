@@ -88,9 +88,9 @@ export PROJECT_NAME_PREFIX="load_test"
 
 ```bash
 # Local development
-uv run granian --interface asgi src/entrypoint/api/main:create_app --factory
+make start
 
-# Or docker-compose
+# OR
 docker-compose up -d
 ```
 
@@ -151,6 +151,7 @@ uv run locust -f tests/load/locustfile.py \
     -r 5 \
     -t 5m \
     --csv=tests/load/results/benchmark_stage \
+    --html=tests/load/results/benchmark_report.html \
     MixedLoadUser
 ```
 
@@ -165,6 +166,7 @@ uv run locust -f tests/load/locustfile.py \
     -r 5 \
     -t 3m \
     --csv=tests/load/results/stress_limit \
+    --html=tests/load/results/stress_limit.html
     StressBatchUser
 ```
 

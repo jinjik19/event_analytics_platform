@@ -1,9 +1,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock
-from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
-from infrastructure.config.settings import AppEnv, Settings
 from infrastructure.security.token_validators.secret_token_validator import SecretTokenValidator
 
 @pytest.fixture
@@ -21,13 +19,13 @@ def mock_uow():
 
     return uow
 
+
 @pytest.fixture
-def mock_logger():
-    logger = MagicMock(spec=BoundLogger)
-    logger.info = MagicMock()
-    logger.error = MagicMock()
-    logger.bind.return_value = logger
-    return logger
+def mock_producer():
+    producer = AsyncMock()
+    producer.publish = AsyncMock()
+    producer.publish_batch = AsyncMock()
+    return producer
 
 
 @pytest.fixture

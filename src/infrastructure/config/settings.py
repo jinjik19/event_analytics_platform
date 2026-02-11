@@ -39,7 +39,8 @@ class Settings(BaseSettings):
     db_name: str = "database"
 
     # redis/valkey
-    valkey_url: str = "redis://localhost:6379/0"
+    cache_url: str = "redis://cache:6380/0"
+    stream_url: str = "redis://stream:6379/0"
 
     # Rate Limiting (requests per minute)
     rate_limit_enabled: bool = False
@@ -48,6 +49,11 @@ class Settings(BaseSettings):
     rate_limit_enterprise_rpm: int = 10000
     rate_limit_no_auth_rpm: int = 10  # fallback without API key
     rate_limit_project_create_rpm: int = 5
+
+    # Worker settings
+    batch_size: int = 100
+    read_timeout_ms: int = 1000
+    metrics_update_interval: int = 15
 
     # Security
     secret_token: str = ""

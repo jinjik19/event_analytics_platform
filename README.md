@@ -13,11 +13,45 @@ Designed to handle real-time ingestion, processing, and visualization of user be
 
 ## Architecture
 
-![container](./docs/architecture/stage1/container.drawio.png)
+```mermaid
+flowchart LR
+    %% Styles
+    classDef storage fill:#3f51b5,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef service fill:#2d3436,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef monitor fill:#00b894,stroke:#fff,stroke-width:2px,color:#fff;
+    classDef dead fill:#d63031,stroke:#333,stroke-width:2px,color:#fff;
 
-_Detailed architecture breakdown:_
+    %% Input
+    User((User / Seeder)) -->|HTTP POST| API[API Gateway]:::service
 
-- [Stage 1](./docs/architecture/stage1/)
+    %% Main Data Flow
+    subgraph "Data Pipeline"
+        API -->|1. Ingest| Stream[(Redis Stream)]:::storage
+        Stream -->|2. Read Group| Worker[Worker Service]:::service
+        Worker -->|3. Write Batch| DB[(PostgreSQL)]:::storage
+    end
+
+    %% Error Handling
+    Worker -.->|4. Error DLQ| DLQ[(Events DLQ Stream)]:::dead
+
+    %% Observability
+    subgraph "Observability Stack"
+        Prometheus[Prometheus]:::monitor
+        Grafana[Grafana]:::monitor
+
+        Prometheus -->|Query| Grafana
+    end
+
+    %% Metrics Scraping
+    API -.->|/metrics| Prometheus
+    Worker -.->|/metrics| Prometheus
+
+    %% Link Styling
+    linkStyle 4 stroke:#d63031,stroke-width:2px,stroke-dasharray: 5 5;
+    linkStyle 6,7 stroke:#00b894,stroke-width:2px,stroke-dasharray: 5 5;
+```
+
+- [architecture](./docs/architecture/)
 
 ---
 
@@ -53,17 +87,18 @@ _Detailed architecture breakdown:_
   - [x] Structured Logging & Metrics preparation.
   - [x] Load Testing benchmarks ([View Results](./benchmarks/stage1_sync_ingestion.md)).
 
-- [ ] **Stage 2: Async Processing** (Current Focus)
-  - [ ] Decouple API from DB using Redis Streams.
-  - [ ] Background Workers implementation.
-  - [ ] At-least-once delivery guarantees.
+- [/] **Stage 2: Async Processing** (Current Focus)
+  - [x] Decouple API from DB using Redis Streams.
+  - [x] Background Workers implementation.
+  - [x] At-least-once delivery guarantees.
+  - [x] Load Testing benchmarks ([View Results](./benchmarks/stage2_with_redis_stream.md)).
 
 - [ ] **Stage 3: CDC & OLAP**
   - [ ] ClickHouse setup.
   - [ ] Debezium & Kafka (CDC).
+  - [ ] Migration data from Postgre to Clickhouse
 
 - [ ] **Stage 4: Orchestration & Quality**
-  - [ ] Dagster & dbt.
 
 - [ ] **Stage 5: Production Deploy (VPS)**
 
@@ -101,13 +136,16 @@ docker-compose up -d --build
 3. Check Health
 
 ```bash
-curl http://localhost:8000/healthz
+curl http://localhost:8000/health
 # Output: {"status": "ok"}
 ```
 
+Prometheus Targets - http://localhost:9090/targets
+Grafana - http://localhost:3000
+
 4. Create/Run migration (optional, because migrations apply with docker containers up)
 
-Create migration.
+#### Create migration.
 
 1. Create sql file with your command in db/schema/postgres
 2. Run command
@@ -116,13 +154,35 @@ Create migration.
 atlas migrate diff some_name --env postgres
 ```
 
-Run migration
+#### Run migration
 
 ```bash
 atlas migrate apply --env postgres
 ```
 
 5. OpenAPI/Swagger - http://localhost:8000/docs#/
+
+---
+
+### Additional utils
+
+1. Seed
+
+#### Run seed
+
+```bash
+make seed-start
+```
+
+#### Stop seed
+
+```bash
+make seed-stop
+```
+
+2. Load Tests
+
+Information about load test [load_tests](./tests/load/README.md)
 
 ---
 
