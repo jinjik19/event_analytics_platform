@@ -31,12 +31,12 @@ Verify that decoupling the API from the Database using **Redis Streams** elimina
 
 | Metric                | Result        | Target   | Status (vs Stage 1)       |
 | --------------------- | ------------- | -------- | ------------------------- |
-| **Avg RPS**           | 48.5 req/s    | -        | Limited by user wait_time |
-| **Throughput**        | ~100 events/s | -        | Stable                    |
-| **API Latency (p50)** | 5             | < 10 ms  | Excelent                  |
-| **API Latency (p95)** | 11            | < 50 ms  | Excelent                  |
-| **API Latency (p99)** | 23 ms         | < 200 ms | Excelent                  |
-| **Consumer Lag**      | 0 (Max 1)     | 0 - 100  | Perfect                   |
+| **Avg RPS**           | 334.18 req/s  | -        | Limited by user wait_time |
+| **Throughput**        | ~967 events/s | -        | Stable                    |
+| **API Latency (p50)** | 5 ms          | < 10 ms  | Excelent                  |
+| **API Latency (p95)** | 13 ms         | < 50 ms  | Excelent                  |
+| **API Latency (p99)** | 32 ms         | < 200 ms | Excelent                  |
+| **Consumer Lag**      | 0 (Max 2)     | 0 - 100  | Perfect                   |
 | **Error Rate**        | 0%            | -        | Rate limits was increased |
 
 ### Graphs
@@ -51,7 +51,7 @@ Verify that decoupling the API from the Database using **Redis Streams** elimina
 
 #### Charts
 
-![total_request_per_second](./assets/stage2/total_requests_per_second_1770787860.102.png)
+![total_request_per_second](./assets/stage2/total_requests_per_second_1770795779.308.png)
 
 #### Failures Statistics
 
@@ -71,9 +71,9 @@ Verify that decoupling the API from the Database using **Redis Streams** elimina
 
 ### Key Observations
 
-1.  **Latency Elimination:** The decoupling was a massive success. P95 Latency dropped to **11ms**. Unlike Stage 1, there are no spikes even during batch processing.
+1.  **Latency Elimination:** The decoupling was a massive success. P95 Latency dropped to **13ms**. Unlike Stage 1, there are no spikes even during batch processing.
 2.  **Stability:** With 0% errors (after increasing rate limits), the system behaves predictably.
-3.  **Resource Headroom:** The single worker handled ~100 events/sec with **0 Lag**. The system is underutilized and ready for the Stress Test.
+3.  **Resource Headroom:** The single worker handled ~967 events/sec with **0 Lag**.
 
 ---
 
@@ -84,7 +84,7 @@ Verify that decoupling the API from the Database using **Redis Streams** elimina
 | Metric                | Result           | Note                                                                        |
 | --------------------- | ---------------- | --------------------------------------------------------------------------- |
 | **Avg RPS**           | 64.5 req/s       | Limited by API CPU (JSON serialization)                                     |
-| **Throughput**        | ~12,900 events/s | (64.5 RPS \* 200 events/batch)                                              |
+| **Throughput**        | ~13,000 events/s | (64.5 RPS \* 200 events/batch)                                              |
 | **API Latency (p95)** | 7.5 s            | High due to CPU saturation (Docker limit), but 6x better than Stage 1 (43s) |
 | **Max Consumer Lag**  | > 100,000        | Queue backlog confirmed. Worker is slower than Producer                     |
 | **Recovery Time**     | ~60 s            | Time to drain 100k events backlog                                           |

@@ -91,7 +91,7 @@ flowchart LR
   - [x] Decouple API from DB using Redis Streams.
   - [x] Background Workers implementation.
   - [x] At-least-once delivery guarantees.
-  - [ ] Load Testing benchmarks ([View Results]()).
+  - [x] Load Testing benchmarks ([View Results](./benchmarks/stage2_with_redis_stream.md)).
 
 - [ ] **Stage 3: CDC & OLAP**
   - [ ] ClickHouse setup.
