@@ -17,6 +17,38 @@ services:
       timeout: 5s
       retries: 5
 
+  dwh:
+    container_name: event_analytics_dwh
+    image: clickhouse/clickhouse-server:25.11
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    environment:
+      CLICKHOUSE_DB: ${DWH_NAME}
+      CLICKHOUSE_USER: ${DWH_USER}
+      CLICKHOUSE_PASSWORD: ${DWH_PASSWORD:-secret_password}
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: 1
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8123/ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
   migrator_db:
     image: arigaio/atlas:1.0.0
     env_file:
@@ -50,7 +82,7 @@ services:
     restart: always
     command: valkey-server /etc/valkey/stream.conf
     volumes:
-      - ./deploy/valkey/stream.conf:/etc/valkey/stream.conf
+      - ./configs/valkey/stream.conf:/etc/valkey/stream.conf
       - ./valkey_data_stream:/data
     ports:
       - "6379:6379"
@@ -113,7 +145,7 @@ services:
     container_name: event_analytics_prometheus
     restart: always
     volumes:
-      - ./deploy/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -163,3 +195,4 @@ volumes:
   event_cache:
   prometheus_data:
   grafana_data:
+  clickhouse_data:
