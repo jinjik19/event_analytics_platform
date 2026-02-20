@@ -153,9 +153,6 @@ Grafana - http://localhost:3000
 ```bash
 # Postgres
 atlas migrate diff some_name --env postgres
-
-# Clickhouse
-atlas migrate diff some_name --env clickhouse
 ```
 
 #### Run migration
@@ -163,9 +160,6 @@ atlas migrate diff some_name --env clickhouse
 ```bash
 # Postgres
 atlas migrate apply --env postgres
-
-# Clickhouse
-atlas migrate apply --env clickhouse
 ```
 
 5. OpenAPI/Swagger - http://localhost:8000/docs#/
