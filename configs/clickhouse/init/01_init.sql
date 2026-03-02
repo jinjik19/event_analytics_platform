@@ -2,7 +2,7 @@ CREATE DATABASE IF NOT EXISTS analytics;
 CREATE TABLE IF NOT EXISTS analytics.project (
     project_id UUID,
     name String,
-    plan String,
+    plan LowCardinality(String),
     api_key String,
     created_at DateTime64(3, 'UTC'),
     _version UInt64
@@ -13,9 +13,15 @@ CREATE TABLE IF NOT EXISTS analytics.event (
     project_id UUID,
     user_id String,
     session_id String,
-    event_type String,
+    event_type LowCardinality(String),
     timestamp DateTime64(3, 'UTC'),
     properties String,
+    country LowCardinality(String),
+    page_url String,
+    currency LowCardinality(String),
+    category LowCardinality(String),
+    product_id String,
+    product_name String,
     created_at DateTime64(3, 'UTC')
 ) ENGINE = MergeTree() PARTITION BY toYYYYMM(timestamp)
 ORDER BY (project_id, event_type, timestamp);
