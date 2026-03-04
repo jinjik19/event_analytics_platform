@@ -87,16 +87,16 @@ flowchart LR
   - [x] Structured Logging & Metrics preparation.
   - [x] Load Testing benchmarks ([View Results](./benchmarks/stage1_sync_ingestion.md)).
 
-- [/] **Stage 2: Async Processing** (Current Focus)
+- [x] **Stage 2: Async Processing** (Current Focus)
   - [x] Decouple API from DB using Redis Streams.
   - [x] Background Workers implementation.
   - [x] At-least-once delivery guarantees.
   - [x] Load Testing benchmarks ([View Results](./benchmarks/stage2_with_redis_stream.md)).
 
-- [ ] **Stage 3: CDC & OLAP**
-  - [ ] ClickHouse setup.
-  - [ ] Debezium & Kafka (CDC).
-  - [ ] Migration data from Postgre to Clickhouse
+- [/] **Stage 3: CDC & OLAP**
+  - [x] ClickHouse setup.
+  - [x] Debezium & Redpanda (CDC).
+  - [ ] Analytical api
 
 - [ ] **Stage 4: Orchestration & Quality**
 
