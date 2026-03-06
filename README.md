@@ -63,14 +63,19 @@ flowchart LR
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
 ![Pydantic V2](https://img.shields.io/badge/Pydantic_v2-e92063?style=for-the-badge&logo=pydantic&logoColor=white)
 
-### **Streaming & Storage:**
+### **Databases:**
 
 ![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
 
+### **Data Streaming:**
+
+![Redpanda](https://img.shields.io/badge/Event%20Streaming-Redpanda-e11d48)
+![Debezium](https://img.shields.io/badge/CDC-Debezium-1f6feb)
+
 ### **Infrastructure:**
 
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white)
 
 ### **Migrations**
 
