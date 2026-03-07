@@ -26,20 +26,26 @@ flowchart LR
 
     %% Main Data Flow
     subgraph "Data Pipeline"
-        API -->|1. Ingest| Stream[(Redis Stream)]:::storage
-        Stream -->|2. Read Group| Worker[Worker Service]:::service
-        Worker -->|3. Write Batch| DB[(PostgreSQL)]:::storage
+        API -->|1. Ingest Event| Stream[(Redis Streams)]:::storage
+        Stream -->|2. Consumer Group| Worker[Worker Service]:::service
+        Worker -->|3. Batch Insert| DB[(PostgreSQL OLTP)]:::storage
+
+        DB -->|WAL / CDC| Debezium[Debezium Connector]:::service
+        Debezium -->|Change Events| Broker[(Redpanda)]:::storage
+        Broker -->|Streaming Insert| DW[(ClickHouse OLAP)]:::storage
+
+        API -->|Analytics Query| DW
     end
 
     %% Error Handling
-    Worker -.->|4. Error DLQ| DLQ[(Events DLQ Stream)]:::dead
+    Worker -.->|DLQ| DLQ[(Events DLQ Stream)]:::dead
 
     %% Observability
     subgraph "Observability Stack"
         Prometheus[Prometheus]:::monitor
         Grafana[Grafana]:::monitor
 
-        Prometheus -->|Query| Grafana
+        Prometheus --> Grafana
     end
 
     %% Metrics Scraping
