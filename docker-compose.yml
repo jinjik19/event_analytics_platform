@@ -161,19 +161,14 @@ services:
       OFFSET_STORAGE_TOPIC: debezium_connect_offsets
       STATUS_STORAGE_TOPIC: debezium_connect_status
       # Worker-level converters applied to every connector unless overridden.
-      # NOTE: Debezium run.sh reads KEY_CONVERTER / VALUE_CONVERTER (no CONNECT_ prefix)
-      # and then does `export CONNECT_KEY_CONVERTER=$KEY_CONVERTER`, so setting
-      # CONNECT_KEY_CONVERTER directly gets silently overwritten by the script.
       KEY_CONVERTER: io.confluent.connect.avro.AvroConverter
       VALUE_CONVERTER: io.confluent.connect.avro.AvroConverter
-      # Schema registry URLs go through the generic CONNECT_* → connect-distributed.properties loop.
+      # Schema registry URLs
       CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
       CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://redpanda:8081
-      # Allows ${env:VAR} references inside connector JSON so credentials
-      # are never hardcoded in the connector config.
+      # Allows ${env:VAR} references inside connector
       CONNECT_CONFIG_PROVIDERS: env
       CONNECT_CONFIG_PROVIDERS_ENV_CLASS: org.apache.kafka.common.config.provider.EnvVarConfigProvider
-
       # Credentials forwarded into connector via ${env:...}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
@@ -229,8 +224,6 @@ services:
     image: docker.redpanda.com/redpandadata/console:v3.5.3
     container_name: redpanda_ui
     restart: unless-stopped
-    # Console v3 reads a YAML config file; env vars only override auth/login.
-    # Kafka brokers + Schema Registry are declared in the config file.
     volumes:
       - ./configs/console/config.yaml:/etc/console/config.yaml
     environment:
