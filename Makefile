@@ -1,4 +1,4 @@
-.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium
 APP_ENV_TEST=test
 
 # Default target
@@ -35,6 +35,25 @@ seed-start:
 seed-stop:
 	docker-compose stop seeder
 	docker-compose rm -f seeder
+
+# CDC / Debezium
+clickhouse-migrate:
+	docker exec -i event_analytics_dwh clickhouse-client \
+		--user $(shell grep ^DWH_USER .env | cut -d= -f2) \
+		--password $(shell grep ^DWH_PASSWORD .env | cut -d= -f2) \
+		--multiquery < configs/clickhouse/init/02_kafka_cdc.sql
+
+debezium-register:
+	@bash configs/debezium/register.sh
+
+debezium-status:
+	@curl -s http://localhost:8083/connectors/postgres-cdc/status | python3 -m json.tool
+
+debezium-topics:
+	@docker exec redpanda rpk topic list
+
+logs-debezium:
+	docker-compose logs -f debezium
 
 # Quality Assurance
 lint:

@@ -27,7 +27,7 @@ router = APIRouter(
     summary="Ingest event",
     status_code=status.HTTP_202_ACCEPTED,
     responses={
-        status.HTTP_200_OK: {"model": IngestEventResponseDTO},
+        status.HTTP_202_ACCEPTED: {"model": IngestEventResponseDTO},
         status.HTTP_400_BAD_REQUEST: RESPONSE[status.HTTP_400_BAD_REQUEST],
         status.HTTP_401_UNAUTHORIZED: RESPONSE[status.HTTP_401_UNAUTHORIZED],
         status.HTTP_422_UNPROCESSABLE_CONTENT: RESPONSE[status.HTTP_400_BAD_REQUEST],
@@ -48,7 +48,7 @@ async def ingest_event(
     summary="Ingest event batch",
     status_code=status.HTTP_202_ACCEPTED,
     responses={
-        status.HTTP_200_OK: {"model": IngestEventBatchResponseDTO},
+        status.HTTP_202_ACCEPTED: {"model": IngestEventBatchResponseDTO},
         status.HTTP_400_BAD_REQUEST: RESPONSE[status.HTTP_400_BAD_REQUEST],
         status.HTTP_401_UNAUTHORIZED: RESPONSE[status.HTTP_401_UNAUTHORIZED],
         status.HTTP_422_UNPROCESSABLE_CONTENT: RESPONSE[status.HTTP_400_BAD_REQUEST],
