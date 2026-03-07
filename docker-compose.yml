@@ -229,15 +229,16 @@ services:
     image: docker.redpanda.com/redpandadata/console:v3.5.3
     container_name: redpanda_ui
     restart: unless-stopped
+    # Console v3 reads a YAML config file; env vars only override auth/login.
+    # Kafka brokers + Schema Registry are declared in the config file.
+    volumes:
+      - ./configs/console/config.yaml:/etc/console/config.yaml
     environment:
-      KAFKA_BROKERS: redpanda:9092
+      CONFIG_FILEPATH: /etc/console/config.yaml
       # Basic Auth
       LOGIN_ENABLED: "true"
       AUTH_BASIC_USERS_0_USERNAME: ${CONSOLE_AUTH_USER:-ui_admin}
       AUTH_BASIC_USERS_0_PASSWORD: ${CONSOLE_AUTH_PASSWORD:-ui_password}
-      # Connect Schema Registry
-      KAFKA_SCHEMAREGISTRY_ENABLED: "true"
-      KAFKA_SCHEMAREGISTRY_URLS: "http://redpanda:8081"
     ports:
       - "8080:8080" # UI in browser
     depends_on:
