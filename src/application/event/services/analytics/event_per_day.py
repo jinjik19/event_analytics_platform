@@ -3,7 +3,7 @@ from uuid import UUID
 from structlog import BoundLogger
 
 from application.event.schemas.events_per_day import EventsPerDayResponseDTO
-from domain.cache.repository import Cache
+from domain.cache.repository import EVENTS_PER_DAY_TTL, Cache
 from domain.event.repository import IEventAnalyticsRepository
 
 
@@ -27,6 +27,8 @@ class EventsPerDayService:
         data = await self._event_dw.count_event_by_day(project_id)
         result = [EventsPerDayResponseDTO(date=item.date, count=item.count) for item in data]
 
-        await self._cache.set(cache_key, [r.model_dump(mode="json") for r in result], ttl=5 * 60)
+        await self._cache.set(
+            cache_key, [r.model_dump(mode="json") for r in result], ttl=EVENTS_PER_DAY_TTL
+        )
 
         return result

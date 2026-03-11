@@ -1,6 +1,10 @@
 from typing import Any, Protocol
 
 
+DEFAULT_TTL = 300
+EVENTS_PER_DAY_TTL = 15 * 60
+
+
 class Cache(Protocol):
     async def set(self, key: str, value: Any, ttl: int = 300) -> None: ...  # noqa: ANN401
 
