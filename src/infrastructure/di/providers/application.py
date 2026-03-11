@@ -2,10 +2,13 @@ from dishka import Provider, Scope, provide
 from structlog import BoundLogger
 
 from application.common.uow import IUnitOfWork
+from application.event.services.analytics.event_per_day import EventsPerDayService
 from application.event.services.ingest import IngestEventService
 from application.event.services.ingest_batch import IngestEventBatchService
 from application.project.services.create import CreateProjectService
+from domain.cache.repository import Cache
 from domain.event.producer import EventProducer
+from domain.event.repository import IEventAnalyticsRepository
 from infrastructure.config.settings import Settings
 
 
@@ -36,3 +39,12 @@ class ApplicationProvider(Provider):
         settings: Settings,
     ) -> IngestEventBatchService:
         return IngestEventBatchService(producer, logger, settings)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_events_per_day(
+        self,
+        event_dw: IEventAnalyticsRepository,
+        logger: BoundLogger,
+        cache: Cache,
+    ) -> EventsPerDayService:
+        return EventsPerDayService(event_dw, logger, cache)

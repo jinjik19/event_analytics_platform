@@ -10,12 +10,14 @@ from entrypoint.api.lifespan import lifespan
 from entrypoint.api.middleware.exception_handler import ExceptionHandlerMiddleware
 from entrypoint.api.middleware.logger import StructlogMiddleware
 from entrypoint.api.routers import health
+from entrypoint.api.routers.v1.analytics import event as analytics_event
 from entrypoint.api.routers.v1.ingestion import event, project
 from infrastructure.config.settings import AppEnv, settings
 from infrastructure.di.providers.api_key import ApiKeyProvider
 from infrastructure.di.providers.application import ApplicationProvider
 from infrastructure.di.providers.cache import CacheProvider
 from infrastructure.di.providers.db import DbProvider
+from infrastructure.di.providers.dw import DWProvider
 from infrastructure.di.providers.logger import LoggerProvider
 from infrastructure.di.providers.rate_limit import RateLimitProvider
 from infrastructure.di.providers.security import SecurityProvider
@@ -56,6 +58,7 @@ def create_app() -> FastAPI:
 
     container = make_async_container(
         DbProvider(),
+        DWProvider(),
         ApplicationProvider(),
         SettingsProvider(),
         LoggerProvider(),
@@ -72,6 +75,7 @@ def create_app() -> FastAPI:
     v1 = APIRouter(prefix="/api/v1")
     v1.include_router(project.router)
     v1.include_router(event.router)
+    v1.include_router(analytics_event.router)
 
     app.include_router(v1)
     app.include_router(health.router)
