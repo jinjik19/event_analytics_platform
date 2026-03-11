@@ -7,6 +7,7 @@ requires-python = ">=3.13"
 dependencies = [
     "asyncpg>=0.31.0",
     "cachetools>=6.2.4",
+    "clickhouse-connect==0.14.0",
     "dishka>=1.7.2",
     "fastapi-limiter>=0.1.6",
     "fastapi[standard]>=0.128.0",
