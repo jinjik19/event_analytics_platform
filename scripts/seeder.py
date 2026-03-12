@@ -229,29 +229,46 @@ class EventSeeder:
 
     async def _simulate_user_journey(self, session: UserSession):
         """Simulate a realistic user journey."""
+
+        # Step 1: Page views - every user browses at least one page
         num_pages = random.randint(1, 5)
         for _ in range(num_pages):
             await self._send_page_view(session)
             await self._sleep(random.uniform(2, 8))
 
-        num_products = random.randint(1, 4)
+        # 50% of users bounce after browsing pages
+        if random.random() < 0.50:
+            return
+
+        # Step 2: Product views - user found something interesting
+        num_products = random.randint(1, 3)
         for _ in range(num_products):
             await self._send_product_view(session)
-            await self._sleep(random.uniform(3, 10))
+            await self._sleep(random.uniform(3, 12))
 
-        for product in session.viewed_products[-3:]:
-            if random.random() < 0.6:
-                await self._send_add_to_cart(session, product)
-                await self._sleep(random.uniform(1, 3))
+        # 75% of product viewers don't add anything to cart
+        if random.random() < 0.75:
+            return
 
-        if session.cart and random.random() < 0.1:
-            await self._send_remove_from_cart(session)
-            await self._sleep(random.uniform(1, 2))
+        # Step 3: Add to cart - user is seriously interested
+        products_to_add = session.viewed_products[: random.randint(1, 2)]
+        for product in products_to_add:
+            await self._send_add_to_cart(session, product)
+            await self._sleep(random.uniform(1, 4))
 
+        # Some users remove an item after second thoughts
         if session.cart and random.random() < 0.15:
-            await self._send_purchase(session)
-            session.cart = []
-            await self._sleep(random.uniform(2, 5))
+            await self._send_remove_from_cart(session)
+            await self._sleep(random.uniform(1, 3))
+
+        # 60% abandon cart
+        if not session.cart or random.random() < 0.60:
+            return
+
+        # Step 4: Purchase - user completes checkout
+        await self._send_purchase(session)
+        session.cart = []
+        await self._sleep(random.uniform(2, 5))
 
         if random.random() < 0.2:
             await self._send_batch(session)
