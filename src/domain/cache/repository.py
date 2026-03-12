@@ -3,6 +3,8 @@ from typing import Any, Protocol
 
 DEFAULT_TTL = 300
 EVENTS_PER_DAY_TTL = 15 * 60
+EVENT_FUNNEL_HISTORICAL_TTL = 24 * 60 * 60
+EVENT_FUNNEL_TTL = 45 * 60
 
 
 class Cache(Protocol):

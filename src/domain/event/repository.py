@@ -4,6 +4,7 @@ from typing import Protocol
 from uuid import UUID
 
 from domain.event.models import Event
+from domain.event.types import EventType
 from domain.types import ProjectID
 
 
@@ -22,5 +23,24 @@ class EventCountByDay:
     count: int
 
 
+@dataclass(slots=True)
+class EventFunnelParams:
+    project_id: ProjectID
+    steps: list[EventType]
+    date_from: date
+    date_to: date
+    window_days: int
+
+
+@dataclass(frozen=True, slots=True)
+class EventFunnelResul:
+    step: EventType
+    users: int
+    conversion_from_prev: float | None
+    conversion_from_top: float | None
+
+
 class IEventAnalyticsRepository(Protocol):
     async def count_event_by_day(self, project_id: ProjectID) -> list[EventCountByDay]: ...
+
+    async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResul]: ...

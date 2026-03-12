@@ -1,9 +1,13 @@
+from typing import Annotated
+
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from application.common.error_response import RESPONSE
 from application.event.schemas.events_per_day import EventsPerDayResponseDTO
+from application.event.schemas.funnel import EventFunnelQueryParams, EventFunnelResponseDTO
 from application.event.services.analytics.event_per_day import EventsPerDayService
+from application.event.services.analytics.funnel import EventFunnelService
 from domain.types import ProjectID
 from infrastructure.rate_limit.dependencies import PlanBasedRateLimiter
 from infrastructure.rate_limit.fastapi_dependency import rate_limit_dependency
@@ -35,3 +39,24 @@ async def events_per_day(
     service: FromDishka[EventsPerDayService],
 ) -> list[EventsPerDayResponseDTO]:
     return await service(project_id=project_id)
+
+
+@router.get(
+    "/funnel",
+    summary="Funnel",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": list[EventFunnelResponseDTO]},
+        status.HTTP_400_BAD_REQUEST: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_401_UNAUTHORIZED: RESPONSE[status.HTTP_401_UNAUTHORIZED],
+        status.HTTP_422_UNPROCESSABLE_CONTENT: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Rate limit exceeded"},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE[status.HTTP_500_INTERNAL_SERVER_ERROR],
+    },
+)
+async def funnel(
+    project_id: FromDishka[ProjectID],
+    query_params: Annotated[EventFunnelQueryParams, Query()],
+    service: FromDishka[EventFunnelService],
+) -> list[EventFunnelResponseDTO]:
+    return await service(project_id=project_id, params=query_params)
