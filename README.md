@@ -107,7 +107,7 @@ flowchart LR
 - [/] **Stage 3: CDC & OLAP**
   - [x] ClickHouse setup.
   - [x] Debezium & Redpanda (CDC).
-  - [ ] Analytical api
+  - [/] Analytical api
 
 - [ ] **Stage 4: Orchestration & Quality**
 
@@ -116,6 +116,69 @@ flowchart LR
 - [ ] **Stage 6: Kubernetes**
 
 - [ ] **Stage 7: Cloud Migration (AWS/GCP)**
+
+---
+
+## Analytics API
+
+All analytics endpoints require authentication via `X-Api-Key` header.
+`project_id` is resolved automatically from the API key — no need to pass it explicitly.
+
+### `GET /api/v1/analytics/events-per-day`
+
+Returns the number of events per day for the project. Results are cached for **15 minutes**.
+
+```bash
+curl http://localhost:8000/api/v1/analytics/events-per-day \
+  -H "X-Api-Key: <your_api_key>"
+```
+
+**Response `200 OK`:**
+```json
+[
+  { "date": "2026-03-10", "count": 20088 },
+  { "date": "2026-03-11", "count": 7978 },
+  { "date": "2026-03-12", "count": 2310 }
+]
+```
+
+---
+
+### `GET /api/v1/analytics/funnel`
+
+Returns funnel conversion metrics for a sequence of event types.
+Results are cached for **45 minutes** (or **24 hours** for fully historical date ranges).
+
+**Query parameters:**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `steps` | `string[]` | `page_view, product_view, add_to_cart, purchase` | Ordered funnel steps |
+| `date_from` | `date` | today − 30 days | Start date (`YYYY-MM-DD`) |
+| `date_to` | `date` | today | End date (`YYYY-MM-DD`) |
+| `window_days` | `int` | `604800` (7 days in seconds) | Max time between first and last step |
+
+```bash
+# Default funnel (last 30 days, 4 steps)
+curl "http://localhost:8000/api/v1/analytics/funnel" \
+  -H "X-Api-Key: <your_api_key>"
+
+# Custom steps and date range
+curl "http://localhost:8000/api/v1/analytics/funnel?steps=page_view&steps=add_to_cart&steps=purchase&date_from=2026-03-01&date_to=2026-03-12" \
+  -H "X-Api-Key: <your_api_key>"
+```
+
+**Response `200 OK`:**
+```json
+[
+  { "step": "page_view",     "users": 9500, "conversion_from_prev": null, "conversion_from_top": 100.0 },
+  { "step": "product_view",  "users": 4200, "conversion_from_prev": 44.2, "conversion_from_top": 44.2 },
+  { "step": "add_to_cart",   "users": 1800, "conversion_from_prev": 42.9, "conversion_from_top": 18.9 },
+  { "step": "purchase",      "users":  540, "conversion_from_prev": 30.0, "conversion_from_top":  5.7 }
+]
+```
+
+> Full interactive docs available at **http://localhost:8000/docs**
 
 ---
 
