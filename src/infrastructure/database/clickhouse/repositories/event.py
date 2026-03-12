@@ -11,7 +11,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
             SELECT
                 toDate(timestamp) AS event_date,
                 COUNT(event_id) AS total
-            FROM analytics.event
+            FROM raw.event
             WHERE project_id = {project_id:UUID}
             GROUP BY event_date
             ORDER BY event_date
@@ -36,7 +36,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
                         toUnixTimestamp("timestamp"),
                         {step_conditions}
                     ) AS level
-                FROM analytics.event
+                FROM raw.event
                 WHERE project_id = {{project_id:UUID}}
                     AND toDate(timestamp) >= {{date_from:Date32}}
                     AND toDate(timestamp) <= {{date_to:Date32}}
