@@ -4,7 +4,7 @@ from typing import Protocol
 from uuid import UUID
 
 from domain.event.models import Event
-from domain.event.types import EventType
+from domain.event.types import AnalyticsMetrics, EventType
 from domain.types import ProjectID
 
 
@@ -40,7 +40,28 @@ class EventFunnelResul:
     conversion_from_top: float | None
 
 
+@dataclass(slots=True)
+class EventTopProductsParams:
+    project_id: ProjectID
+    metric: AnalyticsMetrics
+    date_from: date
+    date_to: date
+    limit: int
+
+
+@dataclass(frozen=True, slots=True)
+class EventTopProductsResul:
+    category: str
+    product_id: str
+    product_name: str
+    add_to_cart_count: int
+    purchase_count: int
+    revenue: float
+
+
 class IEventAnalyticsRepository(Protocol):
     async def count_event_by_day(self, project_id: ProjectID) -> list[EventCountByDay]: ...
 
     async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResul]: ...
+
+    async def top_products(self, params: EventTopProductsParams) -> list[EventTopProductsResul]: ...

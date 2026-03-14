@@ -1,5 +1,11 @@
-from domain.event.repository import EventCountByDay, EventFunnelParams, EventFunnelResul
-from domain.event.types import EventType
+from domain.event.repository import (
+    EventCountByDay,
+    EventFunnelParams,
+    EventFunnelResul,
+    EventTopProductsParams,
+    EventTopProductsResul,
+)
+from domain.event.types import AnalyticsMetrics, EventType
 from domain.types import ProjectID
 from infrastructure.database.clickhouse.base import ClickhouseBaseRepository
 
@@ -83,6 +89,57 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
                 users=row[2],  # row[2] = users
                 conversion_from_prev=row[3],  # row[3] = conversion_from_prev
                 conversion_from_top=row[4],  # row[4] = conversion_from_top
+            )
+            for row in result.result_rows
+        ]
+
+    async def top_products(self, params: EventTopProductsParams) -> list[EventTopProductsResul]:
+        METRICS_ORDER_MAP = {  # noqa: N806
+            AnalyticsMetrics.BY_CART: "add_to_cart_count DESC",
+            AnalyticsMetrics.BY_REVENUE: "revenue DESC, purchase_count DESC",
+        }
+        order_col = METRICS_ORDER_MAP[params.metric]
+
+        query = f"""
+            SELECT
+                category,
+                product_id,
+                argMax(product_name, timestamp) AS product_name,
+                countIf(event_type = 'add_to_cart') AS add_to_cart_count,
+                countIf(event_type = 'purchase') AS purchase_count,
+                sumIf(
+                    JSONExtractFloat(properties, 'price') * JSONExtractUInt(properties, 'quantity'),
+                    event_type = 'purchase'
+                ) AS revenue
+            FROM raw."event"
+            WHERE project_id = {{project_id:UUID}}
+                AND product_id != ''
+                AND event_type IN ('add_to_cart', 'purchase')
+                AND toDate(timestamp) >= {{date_from:Date32}}
+                AND toDate(timestamp) <= {{date_to:Date32}}
+            GROUP BY category, product_id
+            ORDER BY {order_col}
+            LIMIT {{limit:UInt32}}
+        """  # noqa: S608
+
+        result = await self.query(
+            query,
+            parameters={
+                "project_id": params.project_id,
+                "date_from": params.date_from,
+                "date_to": params.date_to,
+                "limit": params.limit,
+            },
+        )
+
+        return [
+            EventTopProductsResul(
+                category=row[0],
+                product_id=row[1],
+                product_name=row[2],
+                add_to_cart_count=row[3],
+                purchase_count=row[4],
+                revenue=row[5],
             )
             for row in result.result_rows
         ]

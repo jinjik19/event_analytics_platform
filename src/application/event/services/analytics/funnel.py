@@ -4,7 +4,7 @@ from uuid import UUID
 from structlog import BoundLogger
 
 from application.event.schemas.funnel import EventFunnelQueryParams, EventFunnelResponseDTO
-from domain.cache.repository import EVENT_FUNNEL_HISTORICAL_TTL, EVENT_FUNNEL_TTL, Cache
+from domain.cache.repository import EVENT_FUNNEL_TTL, EVENT_HISTORICAL_TTL, Cache
 from domain.event.repository import EventFunnelParams, IEventAnalyticsRepository
 
 
@@ -29,7 +29,7 @@ class EventFunnelService:
 
         cached_data = await self._cache.get(cache_key)
 
-        ttl = EVENT_FUNNEL_HISTORICAL_TTL if params.date_to < date.today() else EVENT_FUNNEL_TTL
+        ttl = EVENT_HISTORICAL_TTL if params.date_to < date.today() else EVENT_FUNNEL_TTL
 
         if cached_data is not None:
             return [EventFunnelResponseDTO(**item) for item in cached_data]
