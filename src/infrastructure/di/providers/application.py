@@ -4,6 +4,7 @@ from structlog import BoundLogger
 from application.common.uow import IUnitOfWork
 from application.event.services.analytics.event_per_day import EventsPerDayService
 from application.event.services.analytics.funnel import EventFunnelService
+from application.event.services.analytics.retention import EventRetentionService
 from application.event.services.analytics.top_products import EventTopProductsService
 from application.event.services.ingest import IngestEventService
 from application.event.services.ingest_batch import IngestEventBatchService
@@ -68,3 +69,12 @@ class ApplicationProvider(Provider):
         cache: Cache,
     ) -> EventTopProductsService:
         return EventTopProductsService(event_dw, logger, cache)
+
+    @provide(scope=Scope.REQUEST)
+    async def get_retention(
+        self,
+        event_dw: IEventAnalyticsRepository,
+        logger: BoundLogger,
+        cache: Cache,
+    ) -> EventRetentionService:
+        return EventRetentionService(event_dw, logger, cache)

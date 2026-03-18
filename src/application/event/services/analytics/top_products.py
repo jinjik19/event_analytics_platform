@@ -1,5 +1,4 @@
 from datetime import date
-from uuid import UUID
 
 from structlog import BoundLogger
 
@@ -9,6 +8,7 @@ from application.event.schemas.top_products import (
 )
 from domain.cache.repository import EVENT_HISTORICAL_TTL, EVENT_TOP_PRODUCTS_TTL, Cache
 from domain.event.repository import EventTopProductsParams, IEventAnalyticsRepository
+from domain.types import ProjectID
 
 
 class EventTopProductsService:
@@ -20,7 +20,7 @@ class EventTopProductsService:
         self._cache = cache
 
     async def __call__(
-        self, project_id: UUID, params: EventTopProductsQueryParams
+        self, project_id: ProjectID, params: EventTopProductsQueryParams
     ) -> list[EventTopProductsResponseDTO]:
         self._logger.info("Get top products for project", project_id=project_id)
         cache_key = (

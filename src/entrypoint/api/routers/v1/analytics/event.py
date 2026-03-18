@@ -6,12 +6,14 @@ from fastapi import APIRouter, Depends, Query, status
 from application.common.error_response import RESPONSE
 from application.event.schemas.events_per_day import EventsPerDayResponseDTO
 from application.event.schemas.funnel import EventFunnelQueryParams, EventFunnelResponseDTO
+from application.event.schemas.retention import EventRetentionQueryParams, EventRetentionResponseDTO
 from application.event.schemas.top_products import (
     EventTopProductsQueryParams,
     EventTopProductsResponseDTO,
 )
 from application.event.services.analytics.event_per_day import EventsPerDayService
 from application.event.services.analytics.funnel import EventFunnelService
+from application.event.services.analytics.retention import EventRetentionService
 from application.event.services.analytics.top_products import EventTopProductsService
 from domain.types import ProjectID
 from infrastructure.rate_limit.dependencies import PlanBasedRateLimiter
@@ -85,4 +87,25 @@ async def top_products(
     query_params: Annotated[EventTopProductsQueryParams, Query()],
     service: FromDishka[EventTopProductsService],
 ) -> list[EventTopProductsResponseDTO]:
+    return await service(project_id=project_id, params=query_params)
+
+
+@router.get(
+    "/retention",
+    summary="Retention",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": list[EventRetentionResponseDTO]},
+        status.HTTP_400_BAD_REQUEST: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_401_UNAUTHORIZED: RESPONSE[status.HTTP_401_UNAUTHORIZED],
+        status.HTTP_422_UNPROCESSABLE_CONTENT: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Rate limit exceeded"},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE[status.HTTP_500_INTERNAL_SERVER_ERROR],
+    },
+)
+async def retention(
+    project_id: FromDishka[ProjectID],
+    query_params: Annotated[EventRetentionQueryParams, Query()],
+    service: FromDishka[EventRetentionService],
+) -> list[EventRetentionResponseDTO]:
     return await service(project_id=project_id, params=query_params)

@@ -22,7 +22,7 @@ class DWProvider(Provider):
         try:
             yield client
         finally:
-            client.close()
+            await client.close()
 
     @provide(scope=Scope.REQUEST)
     async def get_event_analytics_repo(self, client: AsyncClient) -> IEventAnalyticsRepository:

@@ -1,3 +1,5 @@
+from typing import Any
+
 from clickhouse_connect.driver.asyncclient import AsyncClient
 from clickhouse_connect.driver.query import QueryResult
 
@@ -9,14 +11,14 @@ class ClickhouseBaseRepository:
     async def query(
         self,
         query: str,
-        parameters: dict | None = None,
+        parameters: dict[str, Any] | None = None,
     ) -> QueryResult:
         return await self._client.query(query, parameters=parameters)
 
     async def insert(
         self,
         table: str,
-        data: list[list],
+        data: list[list[Any]],
         column_names: list[str],
     ) -> None:
         await self._client.insert(table, data, column_names=column_names)

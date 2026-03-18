@@ -59,9 +59,28 @@ class EventTopProductsResul:
     revenue: float
 
 
+@dataclass(slots=True)
+class EventRetentionParams:
+    project_id: ProjectID
+    date_from: date
+    date_to: date
+    days: int
+
+
+@dataclass(frozen=True, slots=True)
+class EventRetentionResul:
+    cohort_date: date
+    day_number: int
+    retained_users: int
+    cohort_size: int
+    retention_pct: float
+
+
 class IEventAnalyticsRepository(Protocol):
     async def count_event_by_day(self, project_id: ProjectID) -> list[EventCountByDay]: ...
 
     async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResul]: ...
 
     async def top_products(self, params: EventTopProductsParams) -> list[EventTopProductsResul]: ...
+
+    async def retention(self, params: EventRetentionParams) -> list[EventRetentionResul]: ...

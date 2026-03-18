@@ -1,10 +1,9 @@
-from uuid import UUID
-
 from structlog import BoundLogger
 
 from application.event.schemas.events_per_day import EventsPerDayResponseDTO
 from domain.cache.repository import EVENTS_PER_DAY_TTL, Cache
 from domain.event.repository import IEventAnalyticsRepository
+from domain.types import ProjectID
 
 
 class EventsPerDayService:
@@ -15,7 +14,7 @@ class EventsPerDayService:
         self._event_dw = event_dw
         self._cache = cache
 
-    async def __call__(self, project_id: UUID) -> list[EventsPerDayResponseDTO]:
+    async def __call__(self, project_id: ProjectID) -> list[EventsPerDayResponseDTO]:
         self._logger.info("Get events per day for project", project_id=project_id)
         cache_key = f"analytics:events_per_day:{project_id}"
 

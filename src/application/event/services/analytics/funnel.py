@@ -1,11 +1,11 @@
 from datetime import date
-from uuid import UUID
 
 from structlog import BoundLogger
 
 from application.event.schemas.funnel import EventFunnelQueryParams, EventFunnelResponseDTO
 from domain.cache.repository import EVENT_FUNNEL_TTL, EVENT_HISTORICAL_TTL, Cache
 from domain.event.repository import EventFunnelParams, IEventAnalyticsRepository
+from domain.types import ProjectID
 
 
 class EventFunnelService:
@@ -17,7 +17,7 @@ class EventFunnelService:
         self._cache = cache
 
     async def __call__(
-        self, project_id: UUID, params: EventFunnelQueryParams
+        self, project_id: ProjectID, params: EventFunnelQueryParams
     ) -> list[EventFunnelResponseDTO]:
         self._logger.info("Get event funnel for project", project_id=project_id)
         cache_key = (

@@ -2,6 +2,8 @@ from domain.event.repository import (
     EventCountByDay,
     EventFunnelParams,
     EventFunnelResul,
+    EventRetentionParams,
+    EventRetentionResul,
     EventTopProductsParams,
     EventTopProductsResul,
 )
@@ -140,6 +142,73 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
                 add_to_cart_count=row[3],
                 purchase_count=row[4],
                 revenue=row[5],
+            )
+            for row in result.result_rows
+        ]
+
+    async def retention(self, params: EventRetentionParams) -> list[EventRetentionResul]:
+        query = """
+            WITH cohorts AS (
+                SELECT
+                    user_id,
+                    toDate(MIN("timestamp")) AS cohort_date
+                FROM raw."event"
+                WHERE project_id = {project_id:UUID}
+                    AND toDate("timestamp") >= {date_from:Date32}
+                    AND toDate("timestamp") <= {date_to:Date32}
+                GROUP BY user_id
+            ), activity AS (
+                SELECT
+                    c.cohort_date,
+                    e.user_id,
+                    dateDiff('day', c.cohort_date, toDate(e."timestamp")) AS day_number
+                FROM raw."event" e
+                INNER JOIN cohorts c ON e.user_id = c.user_id
+                WHERE e.project_id = {project_id:UUID}
+            ), cohort_size AS (
+                SELECT
+                    cohort_date,
+                    COUNT(DISTINCT user_id) AS cohort_size
+                FROM cohorts
+                GROUP BY cohort_date
+            ), retention AS (
+                SELECT
+                    cohort_date,
+                    day_number,
+                    COUNT(DISTINCT user_id) AS retained_users
+                FROM activity
+                WHERE day_number >= 0
+                GROUP BY cohort_date, day_number
+            )
+            SELECT
+                r.cohort_date,
+                r.day_number,
+                r.retained_users,
+                cs.cohort_size,
+                ROUND(r.retained_users / cs.cohort_size * 100, 1) AS retention_pct
+            FROM retention r
+            INNER JOIN cohort_size cs ON cs.cohort_date = r.cohort_date
+            WHERE r.day_number <= {days:UInt16}
+            ORDER BY r.cohort_date, r.day_number
+        """
+
+        result = await self.query(
+            query,
+            parameters={
+                "project_id": params.project_id,
+                "date_from": params.date_from,
+                "date_to": params.date_to,
+                "days": params.days,
+            },
+        )
+
+        return [
+            EventRetentionResul(
+                cohort_date=row[0],
+                day_number=row[1],
+                retained_users=row[2],
+                cohort_size=row[3],
+                retention_pct=row[4],
             )
             for row in result.result_rows
         ]
