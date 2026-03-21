@@ -7,3 +7,14 @@ class EventType(StrEnum):
     ADD_TO_CART = auto()
     REMOVE_FROM_CART = auto()
     PURCHASE = auto()
+
+
+class AnalyticsMetrics(StrEnum):
+    BY_CART = auto()
+    BY_REVENUE = auto()
+
+
+class CountriesMetrics(StrEnum):
+    BY_USERS = auto()
+    BY_EVENTS = auto()
+    BY_REVENUE = auto()

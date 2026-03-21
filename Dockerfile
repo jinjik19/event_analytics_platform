@@ -11,6 +11,7 @@ ARG INSTALL_DEV=false
 
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
+    UV_HTTP_TIMEOUT=120 \
     PYSETUP_PATH="/opt/pysetup" \
     VENV_PATH="/opt/pysetup/.venv"
 
@@ -18,10 +19,11 @@ WORKDIR $PYSETUP_PATH
 
 COPY pyproject.toml uv.lock ./
 
-RUN if [ "$INSTALL_DEV" = "true" ]; then \
-        uv sync --frozen --no-install-project --no-cache --group dev; \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    if [ "$INSTALL_DEV" = "true" ]; then \
+        uv sync --frozen --no-install-project --group dev; \
     else \
-        uv sync --frozen --no-install-project --no-cache; \
+        uv sync --frozen --no-install-project; \
     fi
 
 # ----

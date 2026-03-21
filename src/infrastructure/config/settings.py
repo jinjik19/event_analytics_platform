@@ -38,6 +38,13 @@ class Settings(BaseSettings):
     db_port: int = 5432
     db_name: str = "database"
 
+    # dw
+    dwh_host: str = "localhost"
+    dwh_port: int = 8123
+    dwh_user: str = "clickhouse"
+    dwh_password: str = ""
+    dwh_database: str = "default"
+
     # redis/valkey
     cache_url: str = "redis://cache:6380/0"
     stream_url: str = "redis://stream:6379/0"
@@ -54,6 +61,10 @@ class Settings(BaseSettings):
     batch_size: int = 100
     read_timeout_ms: int = 1000
     metrics_update_interval: int = 15
+
+    # cdc metrics
+    debezium_url: str = "http://localhost:8083"
+    cdc_lag_interval: int = 30
 
     # Security
     secret_token: str = ""

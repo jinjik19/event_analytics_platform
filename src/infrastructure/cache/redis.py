@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import date, datetime
 from typing import Any
 from uuid import UUID
 
@@ -9,7 +9,9 @@ from infrastructure.di.providers.types import CacheRedis
 def json_encoder(obj: Any) -> Any:  # noqa: ANN401
     if isinstance(obj, UUID):
         return str(obj)
-    if isinstance(obj, datetime):
+    if isinstance(obj, datetime):  # datetime first — subclass of date
+        return obj.isoformat()
+    if isinstance(obj, date):
         return obj.isoformat()
     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 

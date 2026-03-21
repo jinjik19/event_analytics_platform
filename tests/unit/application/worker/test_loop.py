@@ -60,7 +60,7 @@ async def test_loop_handles_cancellation(worker_loop, mock_processor, mock_kille
         await worker_loop.run()
         mock_sleep.assert_not_called()
 
-    mock_logger.error.assert_any_call("worker_task_cancelled", error=ANY)
+    mock_logger.info.assert_any_call("worker_task_cancelled", error=ANY)
 
 
 async def test_monitoring_loop_starts_and_stops(worker_loop, mock_killer):

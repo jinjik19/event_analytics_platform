@@ -1,0 +1,30 @@
+-- Databases
+CREATE DATABASE IF NOT EXISTS cdc;
+CREATE DATABASE IF NOT EXISTS raw;
+-- raw tables
+CREATE TABLE IF NOT EXISTS raw.project (
+    project_id UUID,
+    name String,
+    plan LowCardinality(String),
+    api_key String,
+    created_at DateTime64(3, 'UTC'),
+    _version UInt64
+) ENGINE = ReplacingMergeTree(_version)
+ORDER BY (project_id);
+CREATE TABLE IF NOT EXISTS raw.event (
+    event_id UUID,
+    project_id UUID,
+    user_id String,
+    session_id String,
+    event_type LowCardinality(String),
+    timestamp DateTime64(3, 'UTC'),
+    properties String,
+    country LowCardinality(String),
+    page_url String,
+    currency LowCardinality(String),
+    category LowCardinality(String),
+    product_id String,
+    product_name String,
+    created_at DateTime64(3, 'UTC')
+) ENGINE = MergeTree() PARTITION BY toYYYYMM(timestamp)
+ORDER BY (project_id, event_type, timestamp);
