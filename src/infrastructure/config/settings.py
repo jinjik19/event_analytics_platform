@@ -62,6 +62,10 @@ class Settings(BaseSettings):
     read_timeout_ms: int = 1000
     metrics_update_interval: int = 15
 
+    # cdc metrics
+    debezium_url: str = "http://localhost:8083"
+    cdc_lag_interval: int = 30
+
     # Security
     secret_token: str = ""
 
