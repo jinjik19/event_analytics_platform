@@ -73,6 +73,7 @@ flowchart LR
 
 ![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
+![ClickHouse](https://img.shields.io/badge/ClickHouse-FFCC01?style=for-the-badge&logo=clickhouse&logoColor=black)
 
 ### **Data Streaming:**
 
@@ -212,7 +213,7 @@ Results are cached for **30 minutes** (or **24 hours** for fully historical date
 **Query parameters:**
 
 | Parameter   | Type     | Default         | Description                            |
-|-------------|----------|-----------------|----------------------------------------|
+| ----------- | -------- | --------------- | -------------------------------------- |
 | `metric`    | `string` | —               | Sort metric: `by_cart` or `by_revenue` |
 | `date_from` | `date`   | today − 30 days | Start date (`YYYY-MM-DD`)              |
 | `date_to`   | `date`   | today           | End date (`YYYY-MM-DD`)                |
@@ -224,6 +225,7 @@ curl "http://localhost:8000/api/v1/analytics/top-products?metric=by_revenue&limi
 ```
 
 **Response `200 OK`:**
+
 ```json
 [
   {
@@ -232,7 +234,7 @@ curl "http://localhost:8000/api/v1/analytics/top-products?metric=by_revenue&limi
     "product_name": "Wireless Headphones",
     "add_to_cart_count": 320,
     "purchase_count": 95,
-    "revenue": 9405.50
+    "revenue": 9405.5
   }
 ]
 ```
@@ -247,7 +249,7 @@ Results are cached for **10 minutes** (or **24 hours** for fully historical date
 **Query parameters:**
 
 | Parameter   | Type     | Default         | Description                                           |
-|-------------|----------|-----------------|-------------------------------------------------------|
+| ----------- | -------- | --------------- | ----------------------------------------------------- |
 | `sort_by`   | `string` | `by_users`      | Sort metric: `by_users`, `by_events`, or `by_revenue` |
 | `date_from` | `date`   | today − 30 days | Start date (`YYYY-MM-DD`)                             |
 | `date_to`   | `date`   | today           | End date (`YYYY-MM-DD`)                               |
@@ -259,6 +261,7 @@ curl "http://localhost:8000/api/v1/analytics/top-countries?sort_by=by_revenue&li
 ```
 
 **Response `200 OK`:**
+
 ```json
 [
   {
@@ -280,7 +283,7 @@ Results are cached for **10 minutes** (or **24 hours** for fully historical date
 **Query parameters:**
 
 | Parameter   | Type   | Default         | Description                      |
-|-------------|--------|-----------------|----------------------------------|
+| ----------- | ------ | --------------- | -------------------------------- |
 | `date_from` | `date` | today − 30 days | Cohort start date (`YYYY-MM-DD`) |
 | `date_to`   | `date` | today           | Cohort end date (`YYYY-MM-DD`)   |
 | `days`      | `int`  | `14`            | Max day number to track (1–365)  |
@@ -291,11 +294,30 @@ curl "http://localhost:8000/api/v1/analytics/retention?date_from=2026-03-01&date
 ```
 
 **Response `200 OK`:**
+
 ```json
 [
-  { "cohort_date": "2026-03-01", "day_number": 0, "retained_users": 120, "cohort_size": 120, "retention_pct": 100.0 },
-  { "cohort_date": "2026-03-01", "day_number": 1, "retained_users": 74,  "cohort_size": 120, "retention_pct": 61.7 },
-  { "cohort_date": "2026-03-01", "day_number": 7, "retained_users": 31,  "cohort_size": 120, "retention_pct": 25.8 }
+  {
+    "cohort_date": "2026-03-01",
+    "day_number": 0,
+    "retained_users": 120,
+    "cohort_size": 120,
+    "retention_pct": 100.0
+  },
+  {
+    "cohort_date": "2026-03-01",
+    "day_number": 1,
+    "retained_users": 74,
+    "cohort_size": 120,
+    "retention_pct": 61.7
+  },
+  {
+    "cohort_date": "2026-03-01",
+    "day_number": 7,
+    "retained_users": 31,
+    "cohort_size": 120,
+    "retention_pct": 25.8
+  }
 ]
 ```
 
