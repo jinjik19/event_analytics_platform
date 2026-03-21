@@ -10,12 +10,14 @@ from typing import Any
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "../src"))
 
+import asyncpg
 import httpx
 import structlog
 from faker import Faker
 
 from domain.event.types import EventType
 from domain.project.types import Plan
+from infrastructure.config.settings import settings
 
 
 logger = structlog.get_logger("seeder")
@@ -24,6 +26,14 @@ API_HOST = os.getenv("API_HOST", "http://localhost:8000")
 SECRET_TOKEN = os.getenv("SECRET_TOKEN", "test-secret-token")
 SPEED_MULTIPLIER = float(os.getenv("SEEDER_SPEED", "1.0"))
 NUM_USERS = int(os.getenv("SEEDER_USERS", "5"))
+
+# Фиксированные имена — по ним находим уже созданные проекты в БД
+SEEDER_PROJECTS: list[tuple[Plan, str]] = [
+    (Plan.FREE, "seeder_free_shop"),
+    (Plan.PRO, "seeder_pro_store_1"),
+    (Plan.PRO, "seeder_pro_store_2"),
+    (Plan.ENTERPRISE, "seeder_enterprise_mall"),
+]
 
 fake = Faker()
 
@@ -95,7 +105,13 @@ class EventSeeder:
         self.client = httpx.AsyncClient(base_url=API_HOST, timeout=30.0)
 
         await self._wait_for_api()
-        await self._create_projects()
+
+        self.projects = await self._fetch_existing_projects()
+        if self.projects:
+            logger.info("projects_reused", project_count=len(self.projects))
+        else:
+            logger.info("no_existing_projects", hint="Creating seeder projects via API")
+            await self._create_projects()
 
         if not self.projects:
             logger.error("no_projects_created", hint="Check SECRET_TOKEN and API availability")
@@ -103,6 +119,26 @@ class EventSeeder:
 
         logger.info("seeder_ready", project_count=len(self.projects))
         return True
+
+    async def _fetch_existing_projects(self) -> list[Project]:
+        conn = await asyncpg.connect(settings.db_dsn)
+        try:
+            rows = await conn.fetch(
+                """
+                SELECT name, plan, api_key
+                FROM project
+                ORDER BY created_at
+                """
+            )
+            return [
+                Project(name=row["name"], plan=Plan(row["plan"]), api_key=row["api_key"])
+                for row in rows
+            ]
+        except Exception as e:
+            logger.error("db_fetch_failed", error=str(e))
+            return []
+        finally:
+            await conn.close()
 
     async def _wait_for_api(self, max_retries: int = 30):
         """Wait for API to become available."""
@@ -119,17 +155,8 @@ class EventSeeder:
         raise RuntimeError("API not available")
 
     async def _create_projects(self):
-        """Create projects with different plans."""
-        plans_to_create = [
-            (Plan.FREE, "free_shop"),
-            (Plan.PRO, "pro_store_1"),
-            (Plan.PRO, "pro_store_2"),
-            (Plan.ENTERPRISE, "enterprise_mall"),
-        ]
-
-        for plan, name_suffix in plans_to_create:
-            project_name = f"seeder_{name_suffix}_{fake.random_int(1000, 9999)}"
-
+        """Create seeder projects via API (only if they don't exist in DB)."""
+        for plan, project_name in SEEDER_PROJECTS:
             try:
                 resp = await self.client.post(
                     "/api/v1/project",
@@ -202,29 +229,46 @@ class EventSeeder:
 
     async def _simulate_user_journey(self, session: UserSession):
         """Simulate a realistic user journey."""
+
+        # Step 1: Page views - every user browses at least one page
         num_pages = random.randint(1, 5)
         for _ in range(num_pages):
             await self._send_page_view(session)
             await self._sleep(random.uniform(2, 8))
 
-        num_products = random.randint(1, 4)
+        # 50% of users bounce after browsing pages
+        if random.random() < 0.50:
+            return
+
+        # Step 2: Product views - user found something interesting
+        num_products = random.randint(1, 3)
         for _ in range(num_products):
             await self._send_product_view(session)
-            await self._sleep(random.uniform(3, 10))
+            await self._sleep(random.uniform(3, 12))
 
-        for product in session.viewed_products[-3:]:
-            if random.random() < 0.6:
-                await self._send_add_to_cart(session, product)
-                await self._sleep(random.uniform(1, 3))
+        # 75% of product viewers don't add anything to cart
+        if random.random() < 0.75:
+            return
 
-        if session.cart and random.random() < 0.1:
-            await self._send_remove_from_cart(session)
-            await self._sleep(random.uniform(1, 2))
+        # Step 3: Add to cart - user is seriously interested
+        products_to_add = session.viewed_products[: random.randint(1, 2)]
+        for product in products_to_add:
+            await self._send_add_to_cart(session, product)
+            await self._sleep(random.uniform(1, 4))
 
+        # Some users remove an item after second thoughts
         if session.cart and random.random() < 0.15:
-            await self._send_purchase(session)
-            session.cart = []
-            await self._sleep(random.uniform(2, 5))
+            await self._send_remove_from_cart(session)
+            await self._sleep(random.uniform(1, 3))
+
+        # 60% abandon cart
+        if not session.cart or random.random() < 0.60:
+            return
+
+        # Step 4: Purchase - user completes checkout
+        await self._send_purchase(session)
+        session.cart = []
+        await self._sleep(random.uniform(2, 5))
 
         if random.random() < 0.2:
             await self._send_batch(session)

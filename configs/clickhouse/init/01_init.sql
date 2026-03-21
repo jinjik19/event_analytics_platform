@@ -1,5 +1,8 @@
-CREATE DATABASE IF NOT EXISTS analytics;
-CREATE TABLE IF NOT EXISTS analytics.project (
+-- Databases
+CREATE DATABASE IF NOT EXISTS cdc;
+CREATE DATABASE IF NOT EXISTS raw;
+-- raw tables
+CREATE TABLE IF NOT EXISTS raw.project (
     project_id UUID,
     name String,
     plan LowCardinality(String),
@@ -8,7 +11,7 @@ CREATE TABLE IF NOT EXISTS analytics.project (
     _version UInt64
 ) ENGINE = ReplacingMergeTree(_version)
 ORDER BY (project_id);
-CREATE TABLE IF NOT EXISTS analytics.event (
+CREATE TABLE IF NOT EXISTS raw.event (
     event_id UUID,
     project_id UUID,
     user_id String,
