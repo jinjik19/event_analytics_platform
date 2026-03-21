@@ -34,7 +34,7 @@ class WorkerLoop:
                 try:
                     await self._processor.process()
                 except asyncio.CancelledError as e:
-                    self._logger.error("worker_task_cancelled", error=str(e))
+                    self._logger.info("worker_task_cancelled", error=str(e))
                     break
                 except Exception as e:
                     self._logger.error("worker_unexpected_error", error=str(e))

@@ -104,10 +104,10 @@ flowchart LR
   - [x] At-least-once delivery guarantees.
   - [x] Load Testing benchmarks ([View Results](./benchmarks/stage2_with_redis_stream.md)).
 
-- [/] **Stage 3: CDC & OLAP**
+- [x] **Stage 3: CDC & OLAP**
   - [x] ClickHouse setup.
   - [x] Debezium & Redpanda (CDC).
-  - [/] Analytical api
+  - [x] Analytical api
 
 - [ ] **Stage 4: Orchestration & Quality**
 
@@ -134,6 +134,7 @@ curl http://localhost:8000/api/v1/analytics/events-per-day \
 ```
 
 **Response `200 OK`:**
+
 ```json
 [
   { "date": "2026-03-10", "count": 20088 },
@@ -151,12 +152,12 @@ Results are cached for **45 minutes** (or **24 hours** for fully historical date
 
 **Query parameters:**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `steps` | `string[]` | `page_view, product_view, add_to_cart, purchase` | Ordered funnel steps |
-| `date_from` | `date` | today − 30 days | Start date (`YYYY-MM-DD`) |
-| `date_to` | `date` | today | End date (`YYYY-MM-DD`) |
-| `window_days` | `int` | `604800` (7 days in seconds) | Max time between first and last step |
+| Parameter     | Type       | Default                                          | Description                          |
+| ------------- | ---------- | ------------------------------------------------ | ------------------------------------ |
+| `steps`       | `string[]` | `page_view, product_view, add_to_cart, purchase` | Ordered funnel steps                 |
+| `date_from`   | `date`     | today − 30 days                                  | Start date (`YYYY-MM-DD`)            |
+| `date_to`     | `date`     | today                                            | End date (`YYYY-MM-DD`)              |
+| `window_days` | `int`      | `604800` (7 days in seconds)                     | Max time between first and last step |
 
 ```bash
 # Default funnel (last 30 days, 4 steps)
@@ -169,16 +170,162 @@ curl "http://localhost:8000/api/v1/analytics/funnel?steps=page_view&steps=add_to
 ```
 
 **Response `200 OK`:**
+
 ```json
 [
-  { "step": "page_view",     "users": 9500, "conversion_from_prev": null, "conversion_from_top": 100.0 },
-  { "step": "product_view",  "users": 4200, "conversion_from_prev": 44.2, "conversion_from_top": 44.2 },
-  { "step": "add_to_cart",   "users": 1800, "conversion_from_prev": 42.9, "conversion_from_top": 18.9 },
-  { "step": "purchase",      "users":  540, "conversion_from_prev": 30.0, "conversion_from_top":  5.7 }
+  {
+    "step": "page_view",
+    "users": 9500,
+    "conversion_from_prev": null,
+    "conversion_from_top": 100.0
+  },
+  {
+    "step": "product_view",
+    "users": 4200,
+    "conversion_from_prev": 44.2,
+    "conversion_from_top": 44.2
+  },
+  {
+    "step": "add_to_cart",
+    "users": 1800,
+    "conversion_from_prev": 42.9,
+    "conversion_from_top": 18.9
+  },
+  {
+    "step": "purchase",
+    "users": 540,
+    "conversion_from_prev": 30.0,
+    "conversion_from_top": 5.7
+  }
 ]
 ```
 
 > Full interactive docs available at **http://localhost:8000/docs**
+
+---
+
+### `GET /api/v1/analytics/top-products`
+
+Returns top products ranked by cart additions or revenue.
+Results are cached for **30 minutes** (or **24 hours** for fully historical date ranges).
+
+**Query parameters:**
+
+| Parameter   | Type     | Default         | Description                            |
+|-------------|----------|-----------------|----------------------------------------|
+| `metric`    | `string` | —               | Sort metric: `by_cart` or `by_revenue` |
+| `date_from` | `date`   | today − 30 days | Start date (`YYYY-MM-DD`)              |
+| `date_to`   | `date`   | today           | End date (`YYYY-MM-DD`)                |
+| `limit`     | `int`    | `10`            | Number of results (1–100)              |
+
+```bash
+curl "http://localhost:8000/api/v1/analytics/top-products?metric=by_revenue&limit=5" \
+  -H "X-Api-Key: <your_api_key>"
+```
+
+**Response `200 OK`:**
+```json
+[
+  {
+    "category": "Electronics",
+    "product_id": "prod-001",
+    "product_name": "Wireless Headphones",
+    "add_to_cart_count": 320,
+    "purchase_count": 95,
+    "revenue": 9405.50
+  }
+]
+```
+
+---
+
+### `GET /api/v1/analytics/top-countries`
+
+Returns top countries by user activity or revenue.
+Results are cached for **10 minutes** (or **24 hours** for fully historical date ranges).
+
+**Query parameters:**
+
+| Parameter   | Type     | Default         | Description                                           |
+|-------------|----------|-----------------|-------------------------------------------------------|
+| `sort_by`   | `string` | `by_users`      | Sort metric: `by_users`, `by_events`, or `by_revenue` |
+| `date_from` | `date`   | today − 30 days | Start date (`YYYY-MM-DD`)                             |
+| `date_to`   | `date`   | today           | End date (`YYYY-MM-DD`)                               |
+| `limit`     | `int`    | `10`            | Number of results (1–100)                             |
+
+```bash
+curl "http://localhost:8000/api/v1/analytics/top-countries?sort_by=by_revenue&limit=10" \
+  -H "X-Api-Key: <your_api_key>"
+```
+
+**Response `200 OK`:**
+```json
+[
+  {
+    "country": "United States",
+    "unique_users": 4200,
+    "events_count": 38500,
+    "revenue": 52300.75
+  }
+]
+```
+
+---
+
+### `GET /api/v1/analytics/retention`
+
+Returns cohort retention matrix. Day 0 = date of user's first event.
+Results are cached for **10 minutes** (or **24 hours** for fully historical date ranges).
+
+**Query parameters:**
+
+| Parameter   | Type   | Default         | Description                      |
+|-------------|--------|-----------------|----------------------------------|
+| `date_from` | `date` | today − 30 days | Cohort start date (`YYYY-MM-DD`) |
+| `date_to`   | `date` | today           | Cohort end date (`YYYY-MM-DD`)   |
+| `days`      | `int`  | `14`            | Max day number to track (1–365)  |
+
+```bash
+curl "http://localhost:8000/api/v1/analytics/retention?date_from=2026-03-01&date_to=2026-03-21&days=7" \
+  -H "X-Api-Key: <your_api_key>"
+```
+
+**Response `200 OK`:**
+```json
+[
+  { "cohort_date": "2026-03-01", "day_number": 0, "retained_users": 120, "cohort_size": 120, "retention_pct": 100.0 },
+  { "cohort_date": "2026-03-01", "day_number": 1, "retained_users": 74,  "cohort_size": 120, "retention_pct": 61.7 },
+  { "cohort_date": "2026-03-01", "day_number": 7, "retained_users": 31,  "cohort_size": 120, "retention_pct": 25.8 }
+]
+```
+
+> Response is a flat list — client maps it into a matrix by `cohort_date` × `day_number`.
+
+---
+
+## Observability
+
+All dashboards are provisioned automatically — no manual setup required.
+
+| Service    | URL                                 |
+| ---------- | ----------------------------------- |
+| Grafana    | http://localhost:3000 (admin/admin) |
+| Prometheus | http://localhost:9090/targets       |
+
+### Dashboards
+
+**CDC Monitoring** — replication health between PostgreSQL and ClickHouse:
+
+- E2E replication lag (`cdc_e2e_lag`) with alert threshold at 10s
+- Debezium connector status
+
+**API** — HTTP layer performance:
+
+- Request rate, latency (p95), error rate
+
+**Worker** — async processing pipeline:
+
+- Events processed, DLQ size, consumer lag
 
 ---
 
