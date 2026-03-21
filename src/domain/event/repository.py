@@ -4,7 +4,7 @@ from typing import Protocol
 from uuid import UUID
 
 from domain.event.models import Event
-from domain.event.types import AnalyticsMetrics, EventType
+from domain.event.types import AnalyticsMetrics, CountriesMetrics, EventType
 from domain.types import ProjectID
 
 
@@ -33,7 +33,7 @@ class EventFunnelParams:
 
 
 @dataclass(frozen=True, slots=True)
-class EventFunnelResul:
+class EventFunnelResult:
     step: EventType
     users: int
     conversion_from_prev: float | None
@@ -50,7 +50,7 @@ class EventTopProductsParams:
 
 
 @dataclass(frozen=True, slots=True)
-class EventTopProductsResul:
+class EventTopProductsResult:
     category: str
     product_id: str
     product_name: str
@@ -68,7 +68,7 @@ class EventRetentionParams:
 
 
 @dataclass(frozen=True, slots=True)
-class EventRetentionResul:
+class EventRetentionResult:
     cohort_date: date
     day_number: int
     retained_users: int
@@ -76,11 +76,34 @@ class EventRetentionResul:
     retention_pct: float
 
 
+@dataclass(slots=True)
+class EventTopCountriesParams:
+    project_id: ProjectID
+    date_from: date
+    date_to: date
+    limit: int
+    sort_by: CountriesMetrics
+
+
+@dataclass(frozen=True, slots=True)
+class EventTopCountriesResult:
+    country: str
+    unique_users: int
+    events_count: int
+    revenue: float
+
+
 class IEventAnalyticsRepository(Protocol):
     async def count_event_by_day(self, project_id: ProjectID) -> list[EventCountByDay]: ...
 
-    async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResul]: ...
+    async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResult]: ...
 
-    async def top_products(self, params: EventTopProductsParams) -> list[EventTopProductsResul]: ...
+    async def top_products(
+        self, params: EventTopProductsParams
+    ) -> list[EventTopProductsResult]: ...
 
-    async def retention(self, params: EventRetentionParams) -> list[EventRetentionResul]: ...
+    async def retention(self, params: EventRetentionParams) -> list[EventRetentionResult]: ...
+
+    async def top_countries(
+        self, params: EventTopCountriesParams
+    ) -> list[EventTopCountriesResult]: ...

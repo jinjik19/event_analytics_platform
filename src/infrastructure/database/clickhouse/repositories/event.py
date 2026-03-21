@@ -1,13 +1,15 @@
 from domain.event.repository import (
     EventCountByDay,
     EventFunnelParams,
-    EventFunnelResul,
+    EventFunnelResult,
     EventRetentionParams,
-    EventRetentionResul,
+    EventRetentionResult,
+    EventTopCountriesParams,
+    EventTopCountriesResult,
     EventTopProductsParams,
-    EventTopProductsResul,
+    EventTopProductsResult,
 )
-from domain.event.types import AnalyticsMetrics, EventType
+from domain.event.types import AnalyticsMetrics, CountriesMetrics, EventType
 from domain.types import ProjectID
 from infrastructure.database.clickhouse.base import ClickhouseBaseRepository
 
@@ -29,7 +31,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
 
         return [EventCountByDay(date=row[0], count=row[1]) for row in result.result_rows]
 
-    async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResul]:
+    async def funnel(self, params: EventFunnelParams) -> list[EventFunnelResult]:
         step_conditions = ",\n".join(f"event_type = '{step.value}'" for step in params.steps)
         case_when = "\n".join(
             f"WHEN {i + 1} THEN '{step.value}'" for i, step in enumerate(params.steps)
@@ -86,7 +88,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
         )
 
         return [
-            EventFunnelResul(
+            EventFunnelResult(
                 step=EventType(row[1]),  # row[1] = event_name → EventType
                 users=row[2],  # row[2] = users
                 conversion_from_prev=row[3],  # row[3] = conversion_from_prev
@@ -95,7 +97,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
             for row in result.result_rows
         ]
 
-    async def top_products(self, params: EventTopProductsParams) -> list[EventTopProductsResul]:
+    async def top_products(self, params: EventTopProductsParams) -> list[EventTopProductsResult]:
         METRICS_ORDER_MAP = {  # noqa: N806
             AnalyticsMetrics.BY_CART: "add_to_cart_count DESC",
             AnalyticsMetrics.BY_REVENUE: "revenue DESC, purchase_count DESC",
@@ -135,7 +137,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
         )
 
         return [
-            EventTopProductsResul(
+            EventTopProductsResult(
                 category=row[0],
                 product_id=row[1],
                 product_name=row[2],
@@ -146,7 +148,7 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
             for row in result.result_rows
         ]
 
-    async def retention(self, params: EventRetentionParams) -> list[EventRetentionResul]:
+    async def retention(self, params: EventRetentionParams) -> list[EventRetentionResult]:
         query = """
             WITH cohorts AS (
                 SELECT
@@ -203,12 +205,61 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
         )
 
         return [
-            EventRetentionResul(
+            EventRetentionResult(
                 cohort_date=row[0],
                 day_number=row[1],
                 retained_users=row[2],
                 cohort_size=row[3],
                 retention_pct=row[4],
+            )
+            for row in result.result_rows
+        ]
+
+    async def top_countries(self, params: EventTopCountriesParams) -> list[EventTopCountriesResult]:
+        SORT_ORDER_MAP = {  # noqa: N806
+            CountriesMetrics.BY_USERS: "unique_users DESC",
+            CountriesMetrics.BY_EVENTS: "event_count DESC",
+            CountriesMetrics.BY_REVENUE: "revenue DESC",
+        }
+        sort_col = SORT_ORDER_MAP[params.sort_by]
+
+        query = f"""
+            SELECT
+                CASE
+                    WHEN country = '' THEN 'Unknown'
+                    ELSE country
+                END AS country,
+                COUNT(DISTINCT user_id) AS unique_users,
+                COUNT(*) AS event_count,
+                sumIf(
+                    JSONExtractFloat(properties, 'price') * JSONExtractUInt(properties, 'quantity'),
+                    event_type = 'purchase'
+                ) AS revenue
+            FROM raw."event"
+            WHERE project_id = {{project_id:UUID}}
+                AND toDate(timestamp) >= {{date_from:Date32}}
+                AND toDate(timestamp) <= {{date_to:Date32}}
+            GROUP BY country
+            ORDER BY {sort_col}
+            LIMIT {{limit:UInt32}}
+        """  # noqa: S608
+
+        result = await self.query(
+            query,
+            parameters={
+                "project_id": params.project_id,
+                "date_from": params.date_from,
+                "date_to": params.date_to,
+                "limit": params.limit,
+            },
+        )
+
+        return [
+            EventTopCountriesResult(
+                country=row[0],
+                unique_users=row[1],
+                events_count=row[2],
+                revenue=row[3],
             )
             for row in result.result_rows
         ]

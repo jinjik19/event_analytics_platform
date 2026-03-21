@@ -7,6 +7,10 @@ from application.common.error_response import RESPONSE
 from application.event.schemas.events_per_day import EventsPerDayResponseDTO
 from application.event.schemas.funnel import EventFunnelQueryParams, EventFunnelResponseDTO
 from application.event.schemas.retention import EventRetentionQueryParams, EventRetentionResponseDTO
+from application.event.schemas.top_countries import (
+    EventTopCountriesQueryParams,
+    EventTopCountriesResponseDTO,
+)
 from application.event.schemas.top_products import (
     EventTopProductsQueryParams,
     EventTopProductsResponseDTO,
@@ -14,6 +18,7 @@ from application.event.schemas.top_products import (
 from application.event.services.analytics.event_per_day import EventsPerDayService
 from application.event.services.analytics.funnel import EventFunnelService
 from application.event.services.analytics.retention import EventRetentionService
+from application.event.services.analytics.top_countries import EventTopCountriesService
 from application.event.services.analytics.top_products import EventTopProductsService
 from domain.types import ProjectID
 from infrastructure.rate_limit.dependencies import PlanBasedRateLimiter
@@ -108,4 +113,25 @@ async def retention(
     query_params: Annotated[EventRetentionQueryParams, Query()],
     service: FromDishka[EventRetentionService],
 ) -> list[EventRetentionResponseDTO]:
+    return await service(project_id=project_id, params=query_params)
+
+
+@router.get(
+    "/top-countries",
+    summary="Top Countries",
+    status_code=status.HTTP_200_OK,
+    responses={
+        status.HTTP_200_OK: {"model": list[EventTopCountriesResponseDTO]},
+        status.HTTP_400_BAD_REQUEST: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_401_UNAUTHORIZED: RESPONSE[status.HTTP_401_UNAUTHORIZED],
+        status.HTTP_422_UNPROCESSABLE_CONTENT: RESPONSE[status.HTTP_400_BAD_REQUEST],
+        status.HTTP_429_TOO_MANY_REQUESTS: {"description": "Rate limit exceeded"},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: RESPONSE[status.HTTP_500_INTERNAL_SERVER_ERROR],
+    },
+)
+async def top_countries(
+    project_id: FromDishka[ProjectID],
+    query_params: Annotated[EventTopCountriesQueryParams, Query()],
+    service: FromDishka[EventTopCountriesService],
+) -> list[EventTopCountriesResponseDTO]:
     return await service(project_id=project_id, params=query_params)
