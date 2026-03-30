@@ -1,4 +1,4 @@
-.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium dbt-debug dbt-run dbt-test dbt-docs
 APP_ENV_TEST=test
 
 # Default target
@@ -85,6 +85,19 @@ test-integrations:
 
 test-cov:
 	APP_ENV=$(APP_ENV_TEST) uv run pytest --cov=src tests
+
+# dbt
+dbt-debug:
+	cd event_analytics && uv run --env-file ../.env dbt debug
+
+dbt-run:
+	cd event_analytics && uv run --env-file ../.env dbt run
+
+dbt-test:
+	cd event_analytics && uv run --env-file ../.env dbt test
+
+dbt-docs:
+	cd event_analytics && uv run --env-file ../.env dbt docs generate && uv run --env-file ../.env dbt docs serve
 
 # Load Tests
 
