@@ -79,6 +79,11 @@ flowchart LR
 ![Redpanda](https://img.shields.io/badge/Event%20Streaming-Redpanda-e11d48)
 ![Debezium](https://img.shields.io/badge/CDC-Debezium-1f6feb)
 
+### **Analytics:**
+
+![ClickHouse](https://img.shields.io/badge/ClickHouse-FFCC01?style=for-the-badge&logo=clickhouse&logoColor=black)
+![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white)
+
 ### **Infrastructure:**
 
 ![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED?logo=docker&logoColor=white)
@@ -110,12 +115,14 @@ flowchart LR
   - [x] Analytical api
 
 - [ ] **Stage 4: Orchestration & Quality**
+  - [x] dbt staging models with deduplication, normalization, tests and documentation.
+  - [ ] dbt marts (pre-aggregated tables for Analytics API).
+  - [ ] Rewrite Analytics API queries to read from marts instead of raw tables.
+  - [ ] Airflow orchestration (scheduled dbt runs).
 
-- [ ] **Stage 5: Production Deploy (VPS)**
+- [ ] **Stage 5: Kubernetes (local)**
 
-- [ ] **Stage 6: Kubernetes**
-
-- [ ] **Stage 7: Cloud Migration (AWS/GCP)**
+- [ ] **Stage 6: Cloud Migration (GCP/GKE)**
 
 ---
 
@@ -300,6 +307,40 @@ curl "http://localhost:8000/api/v1/analytics/retention?date_from=2026-03-01&date
 ```
 
 > Response is a flat list — client maps it into a matrix by `cohort_date` × `day_number`.
+
+---
+
+## Data Transformations (dbt)
+
+dbt transforms raw ClickHouse data into clean, tested, documented models.
+
+**Model structure:**
+```
+raw.event  (source, CDC)
+    └── analytics.stg_events     (view)  — deduplicated, normalized
+            └── analytics.mart_*  (table) — pre-aggregated for Analytics API
+```
+
+### Commands
+
+```bash
+make dbt-build      # run models + tests in DAG order (recommended)
+make dbt-run        # run models only
+make dbt-test       # run tests only
+make dbt-freshness  # check CDC source freshness (warn >1h, error >24h)
+make dbt-docs       # generate and serve docs → http://localhost:18080
+```
+
+### Documentation
+
+```bash
+make dbt-docs
+```
+
+Opens interactive documentation at **http://localhost:18080** with:
+- Full data lineage graph (`raw.event` → `stg_events` → marts)
+- Column descriptions and data tests
+- Source freshness status
 
 ---
 

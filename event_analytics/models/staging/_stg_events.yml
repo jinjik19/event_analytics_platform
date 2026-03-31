@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: stg_events
+    description: "Deduplicated and normalized events from raw.event. Empty country → 'Unknown', price/quantity extracted from JSON properties."
+    columns:
+      - name: event_id
+        description: "Unique event identifier (UUID), deduplicated via ROW_NUMBER on created_at DESC"
+        data_tests:
+          - unique
+          - not_null
+      - name: project_id
+        description: "Reference to the project that owns this event"
+        data_tests:
+          - not_null
+      - name: user_id
+        description: "Anonymous or authenticated user identifier"
+      - name: session_id
+        description: "Browser session identifier"
+      - name: event_type
+        description: '{{ doc("event_type") }}'
+        data_tests:
+          - not_null
+          - accepted_values:
+              values:
+                [
+                  "page_view",
+                  "product_view",
+                  "add_to_cart",
+                  "remove_from_cart",
+                  "purchase",
+                ]
+      - name: event_date
+        description: "Date derived from timestamp via toDate(), used for partitioned queries"
+        data_tests:
+          - not_null
+      - name: country
+        description: "User country, empty string normalized to 'Unknown'"
+        data_tests:
+          - not_null
+      - name: page_url
+        description: "URL of the page where the event occurred"
+      - name: currency
+        description: "Currency code (e.g. USD, EUR)"
+      - name: category
+        description: "Product category"
+      - name: product_id
+        description: "Product identifier, populated for product_view, add_to_cart, purchase"
+      - name: product_name
+        description: "Product name, populated for product_view, add_to_cart, purchase"
+      - name: price
+        description: "Product price extracted from JSON properties, null if not present"
+      - name: quantity
+        description: "Purchase quantity extracted from JSON properties, null if not present"
+      - name: created_at
+        description: "Record creation timestamp in ClickHouse (UTC)"
+        data_tests:
+          - not_null
