@@ -1,0 +1,28 @@
+version: 2
+
+models:
+  - name: mart_top_countries
+    description: "Top countries(by users, events or revenue)"
+    columns:
+      - name: project_id
+        description: "Reference to the project that owns this event"
+        data_tests:
+          - not_null
+      - name: country
+        description: "Country code"
+        data_tests:
+          - not_null
+      - name: event_date
+        description: "Event date"
+        data_tests:
+          - not_null
+      - name: unique_users
+        description: "Total unique users"
+        data_tests:
+          - not_null
+      - name: event_count
+        description: "Total events"
+        data_tests:
+          - not_null
+      - name: revenue
+        description: "Revenue value"
