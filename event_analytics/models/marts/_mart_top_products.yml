@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: mart_top_products
+    description: "Top products(by cart or by revenue)"
+    columns:
+      - name: project_id
+        description: "Reference to the project that owns this event"
+        data_tests:
+          - not_null
+      - name: product_id
+        description: "Product identificator"
+        data_tests:
+          - not_null
+      - name: category
+        description: "Category name"
+        data_tests:
+          - not_null
+      - name: product_name
+        description: "Product name"
+        data_tests:
+          - not_null
+      - name: add_to_cart_count
+        description: "Number of event add_to_cart"
+        data_tests:
+          - not_null
+      - name: purchase_count
+        description: "Number of event purchase"
+        data_tests:
+          - not_null
+      - name: revenue
+        description: "Revenue value"
+      - name: event_date
+        description: "Event date"
+        data_tests:
+          - not_null

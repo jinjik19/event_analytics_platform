@@ -23,15 +23,21 @@ FROM (
         event_type,
         toDate("timestamp") AS event_date,
         "timestamp",
-        category,
         CASE
-            WHEN country = '' THEN 'Unknown'
+            WHEN category = '' OR category IS NULL THEN 'Unknown'
+            ELSE category
+        END AS category,
+        CASE
+            WHEN country = '' OR country IS NULL THEN 'Unknown'
             ELSE country
         END AS country,
         page_url,
         currency,
         product_id,
-        product_name,
+        CASE
+            WHEN product_name = '' OR product_name IS NULL THEN 'Unknown'
+            ELSE product_name
+        END AS product_name,
         toFloat64OrNull(JSONExtractString(properties, 'price')) AS price,
         toInt32OrNull(JSONExtractString(properties, 'quantity')) AS quantity,
         created_at,
