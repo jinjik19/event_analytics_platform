@@ -1,7 +1,7 @@
 {{
     config(
         order_by='(project_id, event_date)',
-        engine='MergeTree()',
+        engine='AggregatingMergeTree()',
     )
 }}
 
@@ -9,9 +9,9 @@ SELECT
     project_id,
     country,
     event_date,
-    COUNT(DISTINCT user_id) AS unique_users,
-    COUNT(*) AS event_count,
-    sumIf(
+    uniqState(user_id) AS unique_users_state,
+    countState(*) AS event_count,
+    sumIfState(
         price * quantity,
         event_type = 'purchase'
     ) AS revenue

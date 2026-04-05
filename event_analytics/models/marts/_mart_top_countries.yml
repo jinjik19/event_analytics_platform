@@ -16,7 +16,7 @@ models:
         description: "Event date"
         data_tests:
           - not_null
-      - name: unique_users
+      - name: unique_users_state
         description: "Total unique users"
         data_tests:
           - not_null
