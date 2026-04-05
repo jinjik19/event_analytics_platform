@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: mart_events_per_day
+    description: "Number of events per day by project."
+    columns:
+      - name: project_id
+        description: "Reference to the project that owns this event"
+        data_tests:
+          - not_null
+      - name: event_date
+        description: "Event date"
+        data_tests:
+          - not_null
+      - name: events
+        description: "Number of events"
+        data_tests:
+          - not_null
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - project_id
+            - event_date
