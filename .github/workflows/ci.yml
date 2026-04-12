@@ -95,11 +95,17 @@ jobs:
           cd orchestrator
           astro dev start
 
-      - name: Debug Astro environment
+      - name: Debug Airflow env
         run: |
           cd orchestrator
-          astro dev run pip show astronomer-cosmos dbt-clickhouse apache-airflow
-          astro dev run python --version
+          astro dev run version
+          astro dev run info
+          astro dev run providers
+
+      - name: Init Airflow DB
+        run: |
+          cd orchestrator
+          astro dev run db migrate
 
       - name: Run DAG tests
         run: cd orchestrator && astro dev pytest tests/
