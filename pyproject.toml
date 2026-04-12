@@ -25,8 +25,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "apache-airflow>=3.1.0",
-    "astronomer-cosmos>=1.14.0",
+    "apache-airflow==3.1.0",
+    "astronomer-cosmos==1.14.0",
     "faker>=40.1.2",
     "fakeredis>=2.33.0",
     "locust>=2.43.1",
