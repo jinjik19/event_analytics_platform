@@ -84,6 +84,8 @@ jobs:
   airflow-test:
     name: Airflow DAG Tests
     runs-on: ubuntu-latest
+    env:
+      AIRFLOW__COSMOS__ENABLE_CACHE_DBT_LS: "0"
     steps:
       - uses: actions/checkout@v4
 
@@ -94,13 +96,6 @@ jobs:
         run: |
           cd orchestrator
           astro dev start
-
-      - name: Debug Airflow env
-        run: |
-          cd orchestrator
-          astro dev run version
-          astro dev run info
-          astro dev run providers
 
       - name: Init Airflow DB
         run: |
