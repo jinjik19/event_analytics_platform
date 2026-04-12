@@ -350,6 +350,7 @@ dbt transforms raw ClickHouse data into clean, tested, documented models.
 Project lives in `orchestrator/include/event_analytics_dbt/`.
 
 **Model structure:**
+
 ```
 raw.event  (source, CDC)
     └── analytics.stg_events          (view)  — deduplicated, normalized
@@ -376,6 +377,7 @@ make dbt-docs
 ```
 
 Opens interactive documentation at **http://localhost:18080** with:
+
 - Full data lineage graph (`raw.event` → `stg_events` → marts)
 - Column descriptions and data tests
 - Source freshness status
@@ -388,6 +390,7 @@ Apache Airflow via [Astronomer CLI](https://www.astronomer.io/docs/astro/cli/ove
 Project lives in `orchestrator/`.
 
 **Pipeline:**
+
 ```
 Airflow (Cosmos) → dbt run (staging → marts) → dbt test
 ```
@@ -409,10 +412,10 @@ Airflow UI — **http://localhost:8080** (admin / admin)
 
 All dashboards are provisioned automatically — no manual setup required.
 
-| Service    | URL                                      |
-|------------|------------------------------------------|
-| Grafana    | http://localhost:3000 (admin / admin)    |
-| Prometheus | http://localhost:9090/targets            |
+| Service    | URL                                   |
+| ---------- | ------------------------------------- |
+| Grafana    | http://localhost:3000 (admin / admin) |
+| Prometheus | http://localhost:9090/targets         |
 
 ### Dashboards
 
@@ -486,14 +489,14 @@ make dbt-build
 
 ### Services
 
-| Service        | URL                                        |
-|----------------|--------------------------------------------|
-| API            | http://localhost:8000                      |
-| Swagger UI     | http://localhost:8000/docs                 |
-| Airflow UI     | http://orchestrator.localhost:6563 (admin / admin)            |
-| Grafana        | http://localhost:3000 (admin / admin)      |
-| Prometheus     | http://localhost:9090/targets              |
-| dbt Docs       | http://localhost:18080 (`make dbt-docs`)   |
+| Service    | URL                                                |
+| ---------- | -------------------------------------------------- |
+| API        | http://localhost:8000                              |
+| Swagger UI | http://localhost:8000/docs                         |
+| Airflow UI | http://orchestrator.localhost:6563 (admin / admin) |
+| Grafana    | http://localhost:3000 (admin / admin)              |
+| Prometheus | http://localhost:9090/targets                      |
+| dbt Docs   | http://localhost:18080 (`make dbt-docs`)           |
 
 ### Migrations (optional)
 
