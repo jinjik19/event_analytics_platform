@@ -83,6 +83,7 @@ flowchart LR
 
 ![ClickHouse](https://img.shields.io/badge/ClickHouse-FFCC01?style=for-the-badge&logo=clickhouse&logoColor=black)
 ![dbt](https://img.shields.io/badge/dbt-FF694B?style=for-the-badge&logo=dbt&logoColor=white)
+![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-017CEE?style=for-the-badge&logo=Apache%20Airflow&logoColor=white)
 
 ### **Infrastructure:**
 
@@ -116,8 +117,8 @@ flowchart LR
 
 - [ ] **Stage 4: Orchestration & Quality**
   - [x] dbt staging models with deduplication, normalization, tests and documentation.
-  - [ ] dbt marts (pre-aggregated tables for Analytics API).
-  - [ ] Rewrite Analytics API queries to read from marts instead of raw tables.
+  - [x] dbt marts (pre-aggregated tables for Analytics API).
+  - [x] Rewrite Analytics API queries to read from marts instead of raw tables.
   - [ ] Airflow orchestration (scheduled dbt runs).
 
 - [ ] **Stage 5: Kubernetes (local)**
@@ -313,12 +314,16 @@ curl "http://localhost:8000/api/v1/analytics/retention?date_from=2026-03-01&date
 ## Data Transformations (dbt)
 
 dbt transforms raw ClickHouse data into clean, tested, documented models.
+Project lives in `orchestrator/include/event_analytics/`.
 
 **Model structure:**
 ```
 raw.event  (source, CDC)
-    └── analytics.stg_events     (view)  — deduplicated, normalized
-            └── analytics.mart_*  (table) — pre-aggregated for Analytics API
+    └── analytics.stg_events          (view)  — deduplicated, normalized
+            ├── analytics.mart_events_per_day   (table) — daily event counts
+            ├── analytics.mart_top_products     (table) — cart & revenue metrics
+            ├── analytics.mart_top_countries    (table) — geo metrics (AggregatingMergeTree)
+            └── analytics.mart_retention        (table) — Day-N cohort retention
 ```
 
 ### Commands
@@ -341,6 +346,29 @@ Opens interactive documentation at **http://localhost:18080** with:
 - Full data lineage graph (`raw.event` → `stg_events` → marts)
 - Column descriptions and data tests
 - Source freshness status
+
+---
+
+## Orchestration (Airflow)
+
+Apache Airflow via [Astronomer CLI](https://www.astronomer.io/docs/astro/cli/overview) orchestrates scheduled dbt runs.
+Project lives in `orchestrator/`.
+
+**Pipeline:**
+```
+Airflow (Cosmos) → dbt run (staging → marts) → dbt test
+```
+
+### Commands
+
+```bash
+make airflow-start    # start Airflow locally (Astronomer CLI)
+make airflow-stop     # stop
+make airflow-restart  # restart
+make airflow-logs     # tail logs
+```
+
+Airflow UI — **http://localhost:8080** (admin / admin)
 
 ---
 
