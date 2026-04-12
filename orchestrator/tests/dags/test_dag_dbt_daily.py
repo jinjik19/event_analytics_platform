@@ -1,5 +1,5 @@
 import pytest
-from airflow.models import DagBag
+from airflow.sdk import DagBag
 
 from tests.conftest import suppress_logging
 
