@@ -1,4 +1,4 @@
-.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium dbt-debug dbt-run dbt-test dbt-docs dbt-freshness dbt-build airflow-start airflow-stop airflow-restart airflow-logs
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium dbt-debug dbt-run dbt-test dbt-docs dbt-freshness dbt-build airflow-start airflow-stop airflow-restart airflow-logs airflow-test
 APP_ENV_TEST=test
 
 # Default target
