@@ -91,4 +91,4 @@ jobs:
         run: curl -sSL install.astronomer.io | sudo bash -s
 
       - name: Run DAG tests
-        run: cd orchestrator && astro dev pytest tests/ -- -v --tb=long -s
+        run: cd orchestrator && astro dev pytest tests/
