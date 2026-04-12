@@ -1,6 +1,6 @@
 import pytest
 
-from orchestrator.tests.conftest import get_import_errors
+from tests.conftest import get_import_errors
 
 
 @pytest.mark.parametrize(

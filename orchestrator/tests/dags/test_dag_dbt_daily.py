@@ -1,7 +1,7 @@
 import pytest
 from airflow.models import DagBag
 
-from orchestrator.tests.conftest import suppress_logging
+from tests.conftest import suppress_logging
 
 
 DAG_ID = "dbt_daily"

@@ -75,9 +75,11 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --frozen
 
+      - name: dbt deps
+        run: cd orchestrator/include/event_analytics_dbt && uv run dbt deps
+
       - name: dbt compile
-        run: |
-          cd orchestrator/include/event_analytics_dbt && uv run dbt compile
+        run: cd orchestrator/include/event_analytics_dbt && uv run dbt compile
 
   airflow-test:
     name: Airflow DAG Tests
