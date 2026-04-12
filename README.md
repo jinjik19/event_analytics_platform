@@ -20,6 +20,7 @@ flowchart LR
     classDef service fill:#2d3436,stroke:#fff,stroke-width:2px,color:#fff;
     classDef monitor fill:#00b894,stroke:#fff,stroke-width:2px,color:#fff;
     classDef dead fill:#d63031,stroke:#333,stroke-width:2px,color:#fff;
+    classDef transform fill:#e67e22,stroke:#fff,stroke-width:2px,color:#fff;
 
     %% Input
     User((User / Seeder)) -->|HTTP POST| API[API Gateway]:::service
@@ -39,6 +40,12 @@ flowchart LR
 
     %% Error Handling
     Worker -.->|DLQ| DLQ[(Events DLQ Stream)]:::dead
+
+    %% Transformation & Orchestration
+    subgraph "Transformation & Orchestration"
+        Airflow[Airflow / Cosmos]:::transform -->|daily schedule| dbt[dbt]:::transform
+        dbt -->|staging + marts| DW
+    end
 
     %% Observability
     subgraph "Observability Stack"
