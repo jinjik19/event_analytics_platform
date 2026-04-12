@@ -84,13 +84,16 @@ jobs:
   airflow-test:
     name: Airflow DAG Tests
     runs-on: ubuntu-latest
-    env:
-      AIRFLOW__COSMOS__ENABLE_CACHE_DBT_LS: "0"
     steps:
       - uses: actions/checkout@v4
 
       - name: Install Astro CLI
         run: curl -sSL install.astronomer.io | sudo bash -s
+
+      - name: Configure Astro env
+        run: |
+          cd orchestrator
+          printf '\nAIRFLOW__COSMOS__ENABLE_CACHE_DBT_LS=False\n' >> .env
 
       - name: Start Astro project
         run: |
@@ -102,8 +105,10 @@ jobs:
           cd orchestrator
           astro dev run db migrate
 
-      - name: Run DAG tests
-        run: cd orchestrator && astro dev pytest tests/
+      - name: Run DAG tests inside running scheduler container
+        run: |
+          SCHEDULER_CONTAINER=$(docker ps --format '{{.Names}}' | grep '_scheduler$' | head -n 1)
+          docker exec "$SCHEDULER_CONTAINER" pytest /usr/local/airflow/tests
 
       - name: Stop Astro project
         if: always()

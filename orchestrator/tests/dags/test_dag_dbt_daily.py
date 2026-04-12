@@ -19,9 +19,8 @@ def test_dag_exists(dag):
 
 
 def test_dag_schedule(dag):
-    assert dag.schedule_interval == "@daily", (
-        f"Expected '@daily', got '{dag.schedule_interval}'"
-    )
+    schedule = getattr(dag, "schedule", None) or getattr(dag, "schedule_interval", None)
+    assert str(schedule) == "@daily", f"Expected '@daily', got '{schedule}'"
 
 
 def test_dag_tags(dag):
