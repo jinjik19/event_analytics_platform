@@ -84,14 +84,22 @@ jobs:
   airflow-test:
     name: Airflow DAG Tests
     runs-on: ubuntu-latest
-    env:
-      AIRFLOW__COSMOS__ENABLE_CACHE: "False"
-      OPENLINEAGE_DISABLED: "true"
     steps:
       - uses: actions/checkout@v4
+
+      - name: Start Astro project
+        run: |
+          cd orchestrator
+          astro dev start
 
       - name: Install Astro CLI
         run: curl -sSL install.astronomer.io | sudo bash -s
 
       - name: Run DAG tests
         run: cd orchestrator && astro dev pytest tests/
+
+      - name: Stop Astro project
+        if: always()
+        run: |
+          cd orchestrator
+          astro dev stop
