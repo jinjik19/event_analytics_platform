@@ -78,8 +78,8 @@ jobs:
       - name: dbt deps
         run: cd orchestrator/include/event_analytics_dbt && uv run dbt deps
 
-      - name: dbt compile
-        run: cd orchestrator/include/event_analytics_dbt && uv run dbt compile
+      - name: dbt parse
+        run: cd orchestrator/include/event_analytics_dbt && uv run dbt parse
 
   airflow-test:
     name: Airflow DAG Tests
