@@ -87,13 +87,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Astro CLI
+        run: curl -sSL install.astronomer.io | sudo bash -s
+
       - name: Start Astro project
         run: |
           cd orchestrator
           astro dev start
 
-      - name: Install Astro CLI
-        run: curl -sSL install.astronomer.io | sudo bash -s
+      - name: Debug Astro environment
+        run: |
+          cd orchestrator
+          astro dev run pip show astronomer-cosmos dbt-clickhouse apache-airflow
+          astro dev run python --version
 
       - name: Run DAG tests
         run: cd orchestrator && astro dev pytest tests/
