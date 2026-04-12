@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 from airflow.sdk import dag
-from cosmos import DbtTaskGroup, ProfileConfig, ProjectConfig
+from cosmos import DbtTaskGroup, ProfileConfig, ProjectConfig, RenderConfig
 
 
 DBT_PROJECT_PATH = f"{os.environ['AIRFLOW_HOME']}/include/event_analytics_dbt"
@@ -26,6 +26,7 @@ def dbt_daily() -> None:
         group_id="create_marts",
         project_config=ProjectConfig(DBT_PROJECT_PATH),
         profile_config=profile_config,
+        render_config=RenderConfig(enable_cache=False),
     )
 
 
