@@ -1,0 +1,11 @@
+event_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      schema: "{{ env_var('DWH_NAME', 'analytics') }}"
+      host: "{{ env_var('DWH_HOST', 'localhost') }}"
+      port: "{{ env_var('DWH_PORT', '8123') | int }}"
+      user: "{{ env_var('DWH_USER', 'default') }}"
+      password: "{{ env_var('DWH_PASSWORD', '') }}"
+      secure: false

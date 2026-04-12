@@ -1,0 +1,38 @@
+version: 2
+
+models:
+  - name: mart_retention
+    description: >
+      Day-N cohort retention analysis. Each row represents a cohort (users whose first event
+      falls on cohort_date) and shows how many of them returned on a specific day_number.
+      Cohort is scoped per project. Use retention_pct to track engagement over time.
+    columns:
+      - name: project_id
+        description: "Reference to the project that owns this cohort"
+        data_tests:
+          - not_null
+
+      - name: cohort_date
+        description: "Date of the user's first event within the project (Day 0)"
+        data_tests:
+          - not_null
+
+      - name: day_number
+        description: "Number of days since cohort_date. Day 0 = first activity day, Day 1 = next day, etc."
+        data_tests:
+          - not_null
+
+      - name: retained_users
+        description: "Number of unique users from the cohort who were active on this day_number"
+        data_tests:
+          - not_null
+
+      - name: cohort_size
+        description: "Total number of unique users in the cohort (denominator for retention_pct)"
+        data_tests:
+          - not_null
+
+      - name: retention_pct
+        description: "Percentage of cohort retained on day_number. Formula: retained_users / cohort_size * 100"
+        data_tests:
+          - not_null

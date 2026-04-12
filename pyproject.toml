@@ -8,6 +8,7 @@ dependencies = [
     "asyncpg>=0.31.0",
     "cachetools>=6.2.4",
     "clickhouse-connect==0.14.0",
+    "dbt-clickhouse>=1.10.0",
     "dishka>=1.7.2",
     "fastapi-limiter>=0.1.6",
     "fastapi[standard]>=0.128.0",
@@ -24,6 +25,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "apache-airflow==3.1.0",
+    "astronomer-cosmos==1.14.0",
     "faker>=40.1.2",
     "fakeredis>=2.33.0",
     "locust>=2.43.1",
@@ -53,7 +56,7 @@ ignore_missing_imports = true
 [tool.ruff]
 line-length = 100
 target-version = "py313"
-exclude = ["tests"]
+exclude = ["tests", "orchestrator"]
 select = [
     "F",    # Pyflakes
     "E",    # Pydocstyle error

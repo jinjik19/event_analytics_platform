@@ -1,0 +1,54 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    description: "Raw tables populated via CDC (Debezium → Redpanda → ClickHouse)"
+    tables:
+      - name: event
+        description: >
+          Raw events as received from the CDC pipeline. No transformations applied.
+          Partitioned by toYYYYMM(timestamp), ordered by (project_id, event_type, timestamp).
+        loaded_at_field: created_at
+        freshness:
+          warn_after: { count: 1, period: hour }
+          error_after: { count: 24, period: hour }
+        columns:
+          - name: event_id
+            description: "Unique event identifier (UUID)"
+            data_tests:
+              - not_null
+          - name: project_id
+            description: "Reference to the project that owns this event (UUID)"
+            data_tests:
+              - not_null
+          - name: user_id
+            description: "Anonymous or authenticated user identifier"
+          - name: session_id
+            description: "Browser session identifier"
+          - name: event_type
+            description: "Type of event: page_view, product_view, add_to_cart, remove_from_cart, purchase"
+            data_tests:
+              - not_null
+          - name: timestamp
+            description: "Event timestamp with millisecond precision (UTC)"
+            data_tests:
+              - not_null
+          - name: properties
+            description: "Raw JSON payload with event-specific properties (price, quantity, etc.)"
+          - name: country
+            description: "User country, may be empty string for unknown"
+          - name: page_url
+            description: "URL of the page where the event occurred"
+          - name: currency
+            description: "Currency code (e.g. USD, EUR)"
+          - name: category
+            description: "Product category"
+          - name: product_id
+            description: "Product identifier, populated for product_view, add_to_cart, purchase"
+          - name: product_name
+            description: "Product name, populated for product_view, add_to_cart, purchase"
+          - name: created_at
+            description: "Record creation timestamp in ClickHouse (UTC)"
+            data_tests:
+              - not_null

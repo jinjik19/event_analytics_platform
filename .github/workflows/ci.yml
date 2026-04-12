@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   quality:
@@ -55,3 +55,55 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
+
+  dbt-check:
+    name: dbt Compile Check
+    runs-on: ubuntu-latest
+    env:
+      UV_NO_INTERACTIVE: 1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: uv sync --all-extras --frozen
+
+      - name: dbt deps
+        run: cd orchestrator/include/event_analytics_dbt && uv run dbt deps
+
+      - name: dbt parse
+        run: cd orchestrator/include/event_analytics_dbt && uv run dbt parse
+
+  airflow-test:
+    name: Airflow DAG Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Astro CLI
+        run: curl -sSL install.astronomer.io | sudo bash -s
+
+      - name: Configure Astro environment
+        run: |
+          cd orchestrator
+          cat > .env <<'EOF'
+          AIRFLOW__COSMOS__ENABLE_CACHE_DBT_LS=False
+          EOF
+
+      - name: Run DAG tests
+        run: |
+          cd orchestrator
+          astro dev pytest tests/
+
+      - name: Cleanup Astro project
+        if: always()
+        run: |
+          cd orchestrator
+          astro dev stop || true

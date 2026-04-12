@@ -1,4 +1,4 @@
-.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium
+.PHONY: help start stop restart logs lint format analyze test test-unit test-e2e test-cov load-realistic load-stress seed-start seed-stop debezium-register debezium-status debezium-topics logs-debezium dbt-debug dbt-run dbt-test dbt-docs dbt-freshness dbt-build airflow-start airflow-stop airflow-restart airflow-logs airflow-test
 APP_ENV_TEST=test
 
 # Default target
@@ -85,6 +85,43 @@ test-integrations:
 
 test-cov:
 	APP_ENV=$(APP_ENV_TEST) uv run pytest --cov=src tests
+
+# dbt
+DBT_DIR=orchestrator/include/event_analytics_dbt
+
+dbt-build:
+	cd $(DBT_DIR) && uv run --env-file ../../../.env dbt build
+
+dbt-debug:
+	cd $(DBT_DIR) && uv run --env-file ../../../.env dbt debug
+
+dbt-run:
+	cd $(DBT_DIR) && uv run --env-file ../../../.env dbt run
+
+dbt-test:
+	cd $(DBT_DIR) && uv run --env-file ../../../.env dbt test
+
+dbt-docs:
+	cd $(DBT_DIR) && uv run --env-file ../../../.env dbt docs generate && uv run --env-file ../../../.env dbt docs serve --port 18080
+
+dbt-freshness:
+	cd $(DBT_DIR) && uv run --env-file ../../../.env dbt source freshness
+
+# Airflow (Astronomer CLI)
+airflow-start:
+	cd orchestrator && astro dev start
+
+airflow-stop:
+	cd orchestrator && astro dev stop
+
+airflow-restart:
+	cd orchestrator && astro dev restart
+
+airflow-logs:
+	cd orchestrator && astro dev logs
+
+airflow-test:
+	cd orchestrator && astro dev pytest tests/
 
 # Load Tests
 

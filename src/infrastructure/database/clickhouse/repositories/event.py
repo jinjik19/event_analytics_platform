@@ -19,11 +19,10 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
         result = await self.query(
             """
             SELECT
-                toDate(timestamp) AS event_date,
-                COUNT(event_id) AS total
-            FROM raw.event
+                event_date,
+                events AS total
+            FROM analytics.mart_events_per_day
             WHERE project_id = {project_id:UUID}
-            GROUP BY event_date
             ORDER BY event_date
             """,
             parameters={"project_id": project_id},
@@ -46,10 +45,10 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
                         toUnixTimestamp("timestamp"),
                         {step_conditions}
                     ) AS level
-                FROM raw.event
+                FROM analytics.stg_events
                 WHERE project_id = {{project_id:UUID}}
-                    AND toDate(timestamp) >= {{date_from:Date32}}
-                    AND toDate(timestamp) <= {{date_to:Date32}}
+                    AND event_date >= {{date_from:Date32}}
+                    AND event_date <= {{date_to:Date32}}
                 GROUP BY user_id
             ), steps AS (
                 SELECT
@@ -108,19 +107,14 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
             SELECT
                 category,
                 product_id,
-                argMax(product_name, timestamp) AS product_name,
-                countIf(event_type = 'add_to_cart') AS add_to_cart_count,
-                countIf(event_type = 'purchase') AS purchase_count,
-                sumIf(
-                    JSONExtractFloat(properties, 'price') * JSONExtractUInt(properties, 'quantity'),
-                    event_type = 'purchase'
-                ) AS revenue
-            FROM raw."event"
+                argMax(product_name, event_date) AS product_name,
+                SUM(add_to_cart_count) AS add_to_cart_count,
+                SUM(purchase_count) AS purchase_count,
+                SUM(revenue) AS revenue
+            FROM analytics.mart_top_products
             WHERE project_id = {{project_id:UUID}}
-                AND product_id != ''
-                AND event_type IN ('add_to_cart', 'purchase')
-                AND toDate(timestamp) >= {{date_from:Date32}}
-                AND toDate(timestamp) <= {{date_to:Date32}}
+                AND event_date >= {{date_from:Date32}}
+                AND event_date <= {{date_to:Date32}}
             GROUP BY category, product_id
             ORDER BY {order_col}
             LIMIT {{limit:UInt32}}
@@ -150,48 +144,18 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
 
     async def retention(self, params: EventRetentionParams) -> list[EventRetentionResult]:
         query = """
-            WITH cohorts AS (
-                SELECT
-                    user_id,
-                    toDate(MIN("timestamp")) AS cohort_date
-                FROM raw."event"
-                WHERE project_id = {project_id:UUID}
-                    AND toDate("timestamp") >= {date_from:Date32}
-                    AND toDate("timestamp") <= {date_to:Date32}
-                GROUP BY user_id
-            ), activity AS (
-                SELECT
-                    c.cohort_date,
-                    e.user_id,
-                    dateDiff('day', c.cohort_date, toDate(e."timestamp")) AS day_number
-                FROM raw."event" e
-                INNER JOIN cohorts c ON e.user_id = c.user_id
-                WHERE e.project_id = {project_id:UUID}
-            ), cohort_size AS (
-                SELECT
-                    cohort_date,
-                    COUNT(DISTINCT user_id) AS cohort_size
-                FROM cohorts
-                GROUP BY cohort_date
-            ), retention AS (
-                SELECT
-                    cohort_date,
-                    day_number,
-                    COUNT(DISTINCT user_id) AS retained_users
-                FROM activity
-                WHERE day_number >= 0
-                GROUP BY cohort_date, day_number
-            )
             SELECT
-                r.cohort_date,
-                r.day_number,
-                r.retained_users,
-                cs.cohort_size,
-                ROUND(r.retained_users / cs.cohort_size * 100, 1) AS retention_pct
-            FROM retention r
-            INNER JOIN cohort_size cs ON cs.cohort_date = r.cohort_date
-            WHERE r.day_number <= {days:UInt16}
-            ORDER BY r.cohort_date, r.day_number
+                cohort_date,
+                day_number,
+                retained_users,
+                cohort_size,
+                retention_pct
+            FROM analytics.mart_retention
+            WHERE project_id = {project_id:UUID}
+                AND cohort_date >= {date_from:Date32}
+                AND cohort_date <= {date_to:Date32}
+                AND day_number <= {days:UInt16}
+            ORDER BY cohort_date, day_number
         """
 
         result = await self.query(
@@ -225,20 +189,14 @@ class EventAnalyticsRepository(ClickhouseBaseRepository):
 
         query = f"""
             SELECT
-                CASE
-                    WHEN country = '' THEN 'Unknown'
-                    ELSE country
-                END AS country,
-                COUNT(DISTINCT user_id) AS unique_users,
-                COUNT(*) AS event_count,
-                sumIf(
-                    JSONExtractFloat(properties, 'price') * JSONExtractUInt(properties, 'quantity'),
-                    event_type = 'purchase'
-                ) AS revenue
-            FROM raw."event"
+                country,
+                uniqMerge(unique_users_state) AS unique_users,
+                countMerge(event_count) AS event_count,
+                sumIfMerge(revenue) AS revenue
+            FROM analytics.mart_top_countries
             WHERE project_id = {{project_id:UUID}}
-                AND toDate(timestamp) >= {{date_from:Date32}}
-                AND toDate(timestamp) <= {{date_to:Date32}}
+                AND event_date >= {{date_from:Date32}}
+                AND event_date <= {{date_to:Date32}}
             GROUP BY country
             ORDER BY {sort_col}
             LIMIT {{limit:UInt32}}
